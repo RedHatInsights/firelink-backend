@@ -5,3 +5,9 @@ run:
 run-proxy:
 	@echo "Starting Dev Proxy..."
 	python dev_proxy.py
+
+requirements:
+	pipenv lock
+	pipenv run pip freeze > requirements.txt
+
+

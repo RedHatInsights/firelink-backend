@@ -11,7 +11,17 @@ def login_to_openshift():
     oc_token = os.environ.get('OC_TOKEN')
     oc_server = os.environ.get('OC_SERVER')
     if oc_token and oc_server:
-        subprocess.run(["oc", "login", oc_server, "--token", oc_token], check=True)
+        try:
+            result = subprocess.run(
+                ["oc", "login", oc_server, "--token", oc_token],
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            print(result.stdout)
+        except subprocess.CalledProcessError as e:
+            print("Failed to login:", e.stderr)
     else:
         print("OC_TOKEN and OC_SERVER env vars not found. Assuming local kubecontext.")
 

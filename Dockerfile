@@ -1,30 +1,35 @@
-# Use Fedora as the base image
-FROM fedora:latest
+# Use Red Hat Universal Base Image 8 with Python 3.11
+FROM registry.access.redhat.com/ubi8/python-311:1-36
 
-# Install Python 3.10 and pipenv
-RUN dnf -y install python3.10 python3-pip && \
+USER 0
+
+# Enable the copr repo to get oc
+RUN dnf -y install dnf-plugins-core && dnf -y copr enable yselkowitz/openshift
+
+# Install Python 3, pipenv, and necessary tools
+RUN dnf -y install python3 python3-pip openshift-clients && \
     pip3 install pipenv
 
-# Create a non-root user and switch to it
+# Create a non-root user
 RUN useradd -m appuser
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /home/appuser
 
 # Change ownership of the working directory to the non-root user
-RUN chown appuser:appuser /app
+RUN chown -R appuser:appuser /home/appuser
 
 # Switch to non-root user
 USER appuser
 
-# Copy the Pipfile and Pipfile.lock
-COPY --chown=appuser:appuser Pipfile Pipfile.lock ./
-
-# Install dependencies from the Pipfile
-RUN pipenv install --deploy --ignore-pipfile
+# Ensure it is using the local venv
+ENV PIPENV_VENV_IN_PROJECT=1
 
 # Copy the rest of the application source code
 COPY --chown=appuser:appuser . .
+
+# Install dependencies from the Pipfile
+RUN pipenv install
 
 # Set the environment variables
 ENV FLASK_APP server.py
