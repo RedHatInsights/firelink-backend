@@ -39,5 +39,11 @@ objects:
         public:
           enabled: true
           apiPath: firelink
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /health
+          port: 8000
+          scheme: HTTP
 
 
