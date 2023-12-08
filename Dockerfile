@@ -6,9 +6,8 @@ USER 0
 # Enable the copr repo to get oc
 RUN dnf -y install dnf-plugins-core && dnf -y copr enable yselkowitz/openshift
 
-# Install Python 3, pipenv, and necessary tools
-RUN dnf -y install python3 python3-pip openshift-clients && \
-    pip3 install pipenv
+# Install Python 3 and necessary tools
+RUN dnf -y install python3 python3-pip openshift-clients
 
 # Create a non-root user
 RUN useradd -m appuser
@@ -16,20 +15,23 @@ RUN useradd -m appuser
 # Set the working directory in the container
 WORKDIR /home/appuser
 
-# Change ownership of the working directory to the non-root user
-RUN chown -R appuser:appuser /home/appuser
+# Copy the rest of the application source code
+COPY . .
+
+# Install dependencies from the requirements.txt as root
+RUN pip install -r requirements.txt
+
+# Change ownership of the installed packages and working directory to appuser
+RUN chown -R appuser:appuser /home/appuser /opt/app-root
 
 # Switch to non-root user
 USER appuser
 
-# Ensure it is using the local venv
-ENV PIPENV_VENV_IN_PROJECT=1
-
-# Copy the rest of the application source code
+# Copy the application source code
 COPY --chown=appuser:appuser . .
 
-# Install dependencies from the Pipfile
-RUN pipenv install
+# Install dependencies from the requirements.txt
+RUN pip install -r requirements.txt
 
 # Set the environment variables
 ENV FLASK_APP server.py
@@ -40,4 +42,4 @@ ENV FLASK_RUN_PORT 8080
 EXPOSE 8080
 
 # Start Gunicorn and bind to port 8080
-CMD ["pipenv", "run", "gunicorn", "-b", ":8080", "server:app"]
+CMD ["gunicorn", "-b", ":8080", "server:app"]

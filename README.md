@@ -28,6 +28,9 @@ A Dockerfile is provided to run firelink-backend in a Fedora container with guni
 ```bash
 $ export OC_TOKEN="sha256~DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
 $ export OC_SERVER="https://api.secretlab.company.com:6443"
-$ docker build --build-arg ARCH=$(uname -m) -t firelink-backend:latest .
+$ docker build -t firelink-backend:latest .
 $ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8080:8080 firelink-backend:latest
 ```
+
+## Dependency Management
+This project uses pipenv for dep management. However, getting pipenv working in the UBI8 based python-311 image proved to be impossible, at least for me. So, instead we generate a `requirements.txt` file for use in the build process. If you add new depenendencies make sure to run `make requirements` or they wont get picked up during the build.
