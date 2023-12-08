@@ -7,6 +7,19 @@ from flask import jsonify
 import json
 from flask_socketio import emit
 
+def health():
+    try:
+        subprocess.run(
+            ["oc", "whoami"],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return True
+    except subprocess.CalledProcessError as e:
+        return False
+
 def login_to_openshift():
     oc_token = os.environ.get('OC_TOKEN')
     oc_server = os.environ.get('OC_SERVER')

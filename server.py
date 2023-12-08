@@ -10,6 +10,11 @@ app = Flask(__name__, static_folder="webroot")
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600)
 
 @app.route("/api/firelink/health", methods=["POST"])
+def health():
+    # run an oc command to verify we are still logged into the server
+    is_healthy = firekeeper.health()
+    # 200 response if healthy, 500 response if not
+    return ("", 200) if is_healthy else ("", 500)
 
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
