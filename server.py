@@ -9,6 +9,8 @@ import os
 app = Flask(__name__, static_folder="webroot")
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600)
 
+@app.route("/api/firelink/health", methods=["POST"])
+
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
     ns = firekeeper.Namespace()

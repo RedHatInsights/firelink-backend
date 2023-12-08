@@ -9,52 +9,35 @@ parameters:
 - name: OC_TOKEN
   description: OpenShift token
   required: true
+- name: IMAGE
+  description: Image name
+  required: true
+- name: IMAGE_TAG
+  description: Image tag
+  required: true
+- name: ENV_NAME
+  description: ClowdEnvironment name
+  required: true
 
 objects:
-- apiVersion: apps/v1
-  kind: Deployment
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
   metadata:
-    name: firelink-deployment
+    name: firelink-backend
   spec:
-    replicas: 1
-    selector:
-      matchLabels:
-        app: firelink
-    template:
-      metadata:
-        labels:
-          app: firelink
-      spec:
-        containers:
-        - name: firelink
-          image: quay.io/rh_ee_addrew/firelink:latest
-          ports:
-          - containerPort: 80
-          env:
+    envName: ${ENV_NAME}
+    deployments:
+    - name: service
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        env: 
           - name: OC_SERVER
-            value: "${OC_SERVER}"
+            value: ${OC_SERVER}
           - name: OC_TOKEN
-            value: "${OC_TOKEN}"
+            value: ${OC_TOKEN}
+      webServices:
+        public:
+          enabled: true
+          apiPath: firelink
 
-- apiVersion: v1
-  kind: Service
-  metadata:
-    name: firelink-service
-  spec:
-    selector:
-      app: firelink
-    ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
 
-- apiVersion: route.openshift.io/v1
-  kind: Route
-  metadata:
-    name: firelink-route
-  spec:
-    to:
-      kind: Service
-      name: firelink-service
-    port:
-      targetPort: 80

@@ -11,7 +11,7 @@ If you don't set these firelink-backend will assume you are already logged in wi
 
 ## Development Setup
 ```bash
-# Make sure you have pip and pipenv installed before these obviously
+# Make sure you have pip, pipenv, and pyenv installed before these obviously
 $ pipenv install
 $ pipenv shell
 $ make run
@@ -23,13 +23,13 @@ $ make start-proxy
 The backend will run on port 5000 and if you have [firelink-frontend](https://github.com/RedHatInsights/firelink-frontend) running locally it will run on port 3000. The dev proxy will run on port 8080 and send requests to the backend and frontend as required.
 
 ## Building
-A Dockerfile is provided to run firelink-backend in a Fedora container with gunicorn on port 8080. The image is rootless and will run on OpenShift:
+A Dockerfile is provided to run firelink-backend in a Fedora container with gunicorn on port 8000. The image is rootless and will run on OpenShift:
 
 ```bash
 $ export OC_TOKEN="sha256~DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
 $ export OC_SERVER="https://api.secretlab.company.com:6443"
 $ docker build -t firelink-backend:latest .
-$ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8080:8080 firelink-backend:latest
+$ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8000:8000 firelink-backend:latest
 ```
 
 ## Dependency Management

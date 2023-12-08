@@ -36,10 +36,10 @@ RUN pip install -r requirements.txt
 # Set the environment variables
 ENV FLASK_APP server.py
 ENV FLASK_RUN_HOST 0.0.0.0
-ENV FLASK_RUN_PORT 8080
+ENV FLASK_RUN_PORT 8000
 
 # Expose the port the app runs on
 EXPOSE 8080
 
 # Start Gunicorn and bind to port 8080
-CMD ["gunicorn", "-b", ":8080", "server:app"]
+CMD ["gunicorn", "-b", ":8000", "server:app"]
