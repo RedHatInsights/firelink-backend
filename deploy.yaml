@@ -1,0 +1,60 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: firelink-template
+parameters:
+- name: OC_SERVER
+  description: OpenShift server URL
+  required: true
+- name: OC_TOKEN
+  description: OpenShift token
+  required: true
+
+objects:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: firelink-deployment
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: firelink
+    template:
+      metadata:
+        labels:
+          app: firelink
+      spec:
+        containers:
+        - name: firelink
+          image: quay.io/rh_ee_addrew/firelink:latest
+          ports:
+          - containerPort: 80
+          env:
+          - name: OC_SERVER
+            value: "${OC_SERVER}"
+          - name: OC_TOKEN
+            value: "${OC_TOKEN}"
+
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: firelink-service
+  spec:
+    selector:
+      app: firelink
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+- apiVersion: route.openshift.io/v1
+  kind: Route
+  metadata:
+    name: firelink-route
+  spec:
+    to:
+      kind: Service
+      name: firelink-service
+    port:
+      targetPort: 80
