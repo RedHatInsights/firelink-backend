@@ -33,4 +33,4 @@ $ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8080:8080 firelink-backend:l
 ```
 
 ## Dependency Management
-This project uses pipenv for dep management. However, getting pipenv working in the UBI8 based python-311 image proved to be impossible, at least for me. So, instead we generate a `requirements.txt` file for use in the build process. If you add new depenendencies make sure to run `make requirements` or they wont get picked up during the build.
+This project uses pipenv for dep management. However, getting pipenv working in the UBI8 based python-311 image proved to be impossible, at least for me. So, instead we generate a `requirements.txt` file for use in the build process. If you add new depenendencies make sure to run `make requirements` or they wont get picked up during the build. There is a pre-commit hook that should remind you if you forget.
