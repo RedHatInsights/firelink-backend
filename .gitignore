@@ -1,26 +1,4 @@
 .venv
 .vscode
-firelink-ui/node_modules
-firelink-ui/.vscode
 
-# dependencies
-firelink-ui/node_modules
-firelink-ui/.pnp
-firelink-ui/.pnp.js
-
-# testing
-firelink-ui/coverage
-
-# production
-firelink-ui/build
-
-# misc
-firelink-ui/.DS_Store
-firelink-ui/.env.local
-firelink-ui/.env.development.local
-firelink-ui/.env.test.local
-firelink-ui/.env.production.local
-
-firelink-ui/npm-debug.log*
-firelink-ui/yarn-debug.log*
-firelink-ui/yarn-error.log*
+firelink/__pycache__
