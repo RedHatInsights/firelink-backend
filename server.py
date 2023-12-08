@@ -83,7 +83,7 @@ def catch_all(path):
     # Fallback to 'index.html' if the file is not found
     return send_from_directory(app.static_folder, 'index.html')
 
-#app.before_request_funcs = [(None, firekeeper.login_to_openshift())]
+app.before_request_funcs = [(None, firekeeper.login_to_openshift())]
 
 CORS(app)
 

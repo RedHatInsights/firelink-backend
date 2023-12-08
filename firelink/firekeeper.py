@@ -13,7 +13,7 @@ def login_to_openshift():
     if oc_token and oc_server:
         subprocess.run(["oc", "login", oc_server, "--token", oc_token], check=True)
     else:
-        raise RuntimeError("OC_TOKEN and/or OC_SERVER environment variables are not set")
+        print("OC_TOKEN and OC_SERVER env vars not found. Assuming local kubecontext.")
 
 def containsVowels(string):
     string = string.lower()
