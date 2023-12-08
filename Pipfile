@@ -8,6 +8,7 @@ flask = "*"
 crc-bonfire = "*"
 flask-cors = "*"
 flask-socketio = "*"
+gunicorn = "*"
 
 [dev-packages]
 
