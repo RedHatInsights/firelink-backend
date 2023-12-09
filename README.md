@@ -23,7 +23,7 @@ $ make start-proxy
 The backend will run on port 5000 and if you have [firelink-frontend](https://github.com/RedHatInsights/firelink-frontend) running locally it will run on port 3000. The dev proxy will run on port 8080 and send requests to the backend and frontend as required.
 
 ## Building
-A Dockerfile is provided to run firelink-backend in a Fedora container with gunicorn on port 8000. The image is rootless and will run on OpenShift:
+A Dockerfile is provided to run firelink-backend in a UBI8 container with gunicorn on port 8000. The image is rootless and will run on OpenShift:
 
 ```bash
 $ export OC_TOKEN="sha256~DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
