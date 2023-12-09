@@ -43,7 +43,7 @@ ENV FLASK_RUN_PORT 8000
 ENV KUBECONFIG=/home/appuser/.kube/config
 
 # Expose the port the app runs on
-EXPOSE 8080
+EXPOSE 8000
 
 # Start Gunicorn and bind to port 8080
 CMD ["gunicorn", "-b", ":8000", "server:app"]

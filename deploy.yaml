@@ -35,15 +35,24 @@ objects:
             value: ${OC_SERVER}
           - name: OC_TOKEN
             value: ${OC_TOKEN}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
       webServices:
         public:
-          enabled: true
+          enabled: True
           apiPath: firelink
-      livenessProbe:
-        failureThreshold: 3
-        httpGet:
-          path: /health
-          port: 8000
-          scheme: HTTP
+          whitelistPaths:
+            - /health
+            - /api/firelink
 
 
