@@ -11,6 +11,10 @@ fi
 # Define the image name
 IMAGE_NAME="firelink-backend:$GIT_SHA"
 
+# Log in to registries
+docker login -u="$QUAY_USER" -p="$QUAY_TOKEN" quay.io
+docker login -u="$RH_REGISTRY_USER" -p="$RH_REGISTRY_TOKEN" registry.redhat.io
+
 # Build the Docker image
 echo "Building Docker image: $IMAGE_NAME"
 docker build -t "$IMAGE_NAME" .
