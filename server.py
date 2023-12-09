@@ -6,7 +6,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import os
 
-app = Flask(__name__, static_folder="webroot")
+app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600)
 
 @app.route("/health")
@@ -73,21 +73,6 @@ def apps_deploy(request):
         j["frontends"],
         j["pool"])
     
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def catch_all(path):
-    if path == "":
-        # Directly return index.html for the root URL
-        return send_from_directory(app.static_folder, 'index.html')
-
-    # Check if the file exists in the static directory
-    static_path = os.path.join(app.static_folder, path)
-    if os.path.exists(static_path):
-        return send_from_directory(app.static_folder, path)
-
-    # Fallback to 'index.html' if the file is not found
-    return send_from_directory(app.static_folder, 'index.html')
-
 app.before_request_funcs = [(None, firekeeper.login_to_openshift())]
 
 CORS(app)

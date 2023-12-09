@@ -53,6 +53,6 @@ objects:
           apiPath: firelink
           whitelistPaths:
             - /health
-            - /api/firelink
+            - /api/firelink/*
 
 
