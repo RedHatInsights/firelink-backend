@@ -40,6 +40,7 @@ RUN pip install -r requirements.txt
 ENV FLASK_APP server.py
 ENV FLASK_RUN_HOST 0.0.0.0
 ENV FLASK_RUN_PORT 8000
+ENV KUBECONFIG=/home/appuser/.kube/config
 
 # Expose the port the app runs on
 EXPOSE 8080
