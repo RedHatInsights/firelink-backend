@@ -1,0 +1,67 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: firelink-template
+parameters:
+  - name: OC_TOKEN
+    description: OpenShift token
+    required: true
+  - name: OC_SERVER
+    description: OpenShift server URL
+    required: true
+  - name: IMAGE
+    description: Image name
+    required: true
+  - name: IMAGE_TAG
+    description: Image tag
+    required: true
+
+objects:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: firelink
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: firelink
+      template:
+        metadata:
+          labels:
+            app: firelink
+        spec:
+          containers:
+            - name: firelink
+              image: "${IMAGE}:${IMAGE_TAG}"
+              ports:
+                - containerPort: 8000
+              env:
+                - name: OC_TOKEN
+                  value: "${OC_TOKEN}"
+                - name: OC_SERVER
+                  value: "${OC_SERVER}"
+
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: firelink-service
+    spec:
+      selector:
+        app: firelink
+      ports:
+        - protocol: TCP
+          port: 80
+          targetPort: 8000
+
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: firelink-route
+    spec:
+      to:
+        kind: Service
+        name: firelink-service
+      port:
+        targetPort: 8000
+      path: /api/firelink/

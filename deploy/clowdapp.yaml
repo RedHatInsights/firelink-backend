@@ -30,11 +30,6 @@ objects:
     - name: service
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
-        env: 
-          - name: OC_SERVER
-            value: ${OC_SERVER}
-          - name: OC_TOKEN
-            value: ${OC_TOKEN}
         livenessProbe:
           failureThreshold: 3
           httpGet:
@@ -47,10 +42,16 @@ objects:
             path: /health
             port: 8000
             scheme: HTTP
+        env: 
+          - name: OC_SERVER
+            value: ${OC_SERVER}
+          - name: OC_TOKEN
+            value: ${OC_TOKEN}
       webServices:
         public:
           enabled: True
-          apiPath: firelink
+          apiPaths: 
+            - /api/firelink/
           whitelistPaths:
             - /health
             - /api/firelink/*

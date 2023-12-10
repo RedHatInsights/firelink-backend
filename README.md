@@ -36,8 +36,17 @@ $ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8000:8000 firelink-backend:l
 This project uses pipenv for dep management. However, getting pipenv working in the UBI8 based python-311 image proved to be impossible, at least for me. So, instead we generate a `requirements.txt` file for use in the build process. If you add new depenendencies make sure to run `make requirements` or they wont get picked up during the build. There is a pre-commit hook that should remind you if you forget.
 
 # Deploy
-You can deploy to an OpenShift cluster running the [Clowder](https://github.com/RedHatInsights/clowder) operator with the provided template `deploy.yaml`:
+
+## ClowdApp
+You can deploy to an OpenShift cluster running the [Clowder](https://github.com/RedHatInsights/clowder) operator with the provided template `deploy/clowder.yaml`:
 
 ```bash
-$ oc process -f deploy.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="ba8c50f" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
+$ oc process -f deploy/clowder.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
+```
+
+## OpenShift Template
+You can deploy to a cluster without Clowder, or if you don't need additional Clowder features, using the provided template:
+
+```bash
+$ oc process -f deploy/template.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" | oc apply -n $NS -f - 
 ```
