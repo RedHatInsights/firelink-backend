@@ -2,7 +2,8 @@ import operator
 import time
 import subprocess
 import os
-from bonfire import bonfire
+from bonfire import bonfire, qontract
+
 from flask import jsonify
 import json
 from flask_socketio import emit
@@ -38,6 +39,10 @@ def login_to_openshift():
     else:
         print("OC_TOKEN and OC_SERVER env vars not found. Assuming local kubecontext.")
 
+def create_gql_client():
+    global _client 
+    _client = qontract.get_client()
+
 def containsVowels(string):
     string = string.lower()
     for char in string:
@@ -53,11 +58,15 @@ class Apps:
     def list(self, 
         source="appsre", 
         local_config_path="", 
-        target_env="insights-ephemeral", 
-        list_components=True):
+        target_env="insights-ephemeral",
+        ref_env="insights-stage",
+        fallback_ref_env="insights-stage",
+        # This can be like {"SOME_PARAM": "SOME_VALUE", "ENV_NAME": "frontends"}
+        preferred_params={},
+        ):
         route_guard()
 
-        apps = bonfire._get_apps_config(source, target_env, None, local_config_path)
+        apps = bonfire._get_apps_config(source, target_env, ref_env, fallback_ref_env, None, None, preferred_params)
 
         appsArray = []
         for app_name, app_dict in apps.items():

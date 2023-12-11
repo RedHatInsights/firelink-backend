@@ -41,7 +41,7 @@ This project uses pipenv for dep management. However, getting pipenv working in 
 You can deploy to an OpenShift cluster running the [Clowder](https://github.com/RedHatInsights/clowder) operator with the provided template `deploy/clowder.yaml`:
 
 ```bash
-$ oc process -f deploy/clowder.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
+$ oc process -f deploy/clowdapp.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
 ```
 
 ## OpenShift Template

@@ -73,7 +73,7 @@ def apps_deploy(request):
         j["frontends"],
         j["pool"])
     
-app.before_request_funcs = [(None, firekeeper.login_to_openshift())]
+app.before_request_funcs = [(None, firekeeper.login_to_openshift(), firekeeper.create_gql_client())]
 
 CORS(app)
 
