@@ -25,7 +25,7 @@ RUN pip install -r requirements.txt
 RUN chown -R appuser:appuser /home/appuser /opt/app-root
 
 # Set permissions to allow access to the OpenShift-assigned user
-RUN chmod -R 777 /home/appuser
+RUN chmod -R 777 /home/appuser /opt/app-root
 
 # Switch to non-root user
 USER appuser
