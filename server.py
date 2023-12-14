@@ -7,7 +7,7 @@ from flask_socketio import SocketIO, emit
 import os
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600)
+socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, path="/api/firelink/socket.io")
 
 @app.route("/health")
 def health():
