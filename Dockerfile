@@ -46,4 +46,4 @@ ENV KUBECONFIG=/home/appuser/.kube/config
 EXPOSE 8000
 
 # Start Gunicorn and bind to port 8080
-CMD ["gunicorn", "-b", ":8000", "server:app"]
+CMD ["gunicorn", "-k", "gevent", "-w", "1", "-b", ":8000", "server:app"]
