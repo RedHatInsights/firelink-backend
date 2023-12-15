@@ -4,7 +4,8 @@ run:
 
 run-proxy:
 	@echo "Starting Dev Proxy..."
-	python dev_proxy.py
+	@command -v caddy >/dev/null 2>&1 || { echo >&2 "Caddy is not installed.  Aborting."; exit 1; }
+	caddy run --config proxy/Caddyfile
 
 requirements:
 	pipenv lock

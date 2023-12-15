@@ -5,6 +5,7 @@ from firelink import firekeeper
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import os
+import logging
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, path="/api/firelink/socket.io")
@@ -72,10 +73,20 @@ def apps_deploy(request):
         j["local"],
         j["frontends"],
         j["pool"])
-    
+
+@app.before_request
+def log_request_info():
+    app.logger.info(f"Request: {request.method} {request.url} - {request.remote_addr}")
+    # If you want to log the request body as well, uncomment the following line
+    # app.logger.info(f"Request Body: {request.get_data()}")
+
+
 app.before_request_funcs = [(None, firekeeper.login_to_openshift(), firekeeper.create_gql_client())]
 
 CORS(app)
+
+
+
 
 if __name__ == '__main__':
     socketio.run(app)

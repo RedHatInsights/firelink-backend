@@ -3,10 +3,10 @@ import time
 import subprocess
 import os
 from bonfire import bonfire, qontract
-
+from flask_socketio import emit
 from flask import jsonify
 import json
-from flask_socketio import emit
+
 
 def health():
     try:
@@ -117,8 +117,8 @@ class Apps:
         except Exception as e:
             emit(DEPLOY_ERROR, {'message': "Clowd Environment not found in deployment target"})
             return
-
-        ns, reserved_new_ns = bonfire._get_namespace(namespace, name, requester, duration, pool, timeout, local)
+        
+        ns, reserved_new_ns = bonfire._get_namespace(namespace, name, requester, duration, pool, timeout, local, True, True)
 
         if import_secrets:
             bonfire.import_secrets_from_dir(secrets_dir)
@@ -151,27 +151,33 @@ class Apps:
             emit(END_EVENT, {'message: error': str(err)})
 
         try:
+            local_config_method = None
+            fallback_ref_env = "insights-stage"
+            preferred_params = {}
             emit(DEPLOY_MONITOR, {'message':"Processing app templates..."})
             apps_config = bonfire._process(
-                app_names,
-                source,
-                get_dependencies,
-                optional_deps_method,
-                set_image_tag,
-                ref_env,
-                target_env,
-                set_template_ref,
-                set_parameter,
-                clowd_env,
-                local_config_path,
-                remove_resources,
-                no_remove_resources,
-                remove_dependencies,
-                no_remove_dependencies,
-                single_replicas,
-                component_filter,
-                local,
-                frontends,
+            app_names,
+            source,
+            get_dependencies,
+            optional_deps_method,
+            local_config_method,
+            set_image_tag,
+            ref_env,
+            fallback_ref_env,
+            target_env,
+            set_template_ref,
+            set_parameter,
+            clowd_env,
+            local_config_path,
+            remove_resources,
+            no_remove_resources,
+            remove_dependencies,
+            no_remove_dependencies,
+            single_replicas,
+            component_filter,
+            local,
+            frontends,
+            preferred_params,
             )
             #log.debug("app configs:\n%s", json.dumps(apps_config, indent=2))
             if not apps_config["items"]:

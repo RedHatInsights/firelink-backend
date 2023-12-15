@@ -16,11 +16,11 @@ $ pipenv install
 $ pipenv shell
 $ make run
 ```
-We also include a dev proxy to make doing development on the frontend and backend at the same time easier. You can start the dev proxy with:
+We also include a dev proxy Caddy config to make doing development on the frontend and backend at the same time easier. You can start the dev proxy with this (if you have Caddy installed)
 ```bash
 $ make start-proxy
 ```
-The backend will run on port 5000 and if you have [firelink-frontend](https://github.com/RedHatInsights/firelink-frontend) running locally it will run on port 3000. The dev proxy will run on port 8080 and send requests to the backend and frontend as required.
+The backend will run on port 5000 and if you have [firelink-frontend](https://github.com/RedHatInsights/firelink-frontend) running locally it will run on port 3000. The dev proxy will run on port 8000 and send requests to the backend and frontend as required.
 
 ## Building
 A Dockerfile is provided to run firelink-backend in a UBI8 container with gunicorn on port 8000. The image is rootless and will run on OpenShift:

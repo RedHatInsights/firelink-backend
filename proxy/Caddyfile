@@ -1,0 +1,18 @@
+{
+    debug
+}
+:8000 {
+
+    reverse_proxy /api/firelink/socket.io/* localhost:5000 {
+        header_up Connection {http.upgrade}
+        header_up Upgrade {http.upgrade}
+        header_up Host {http.request.host}
+        header_up X-Real-IP {http.request.remote}
+        header_up X-Forwarded-For {http.request.remote}
+        header_up X-Forwarded-Proto {http.request.scheme}
+    }
+
+    reverse_proxy /api/* localhost:5000
+
+    reverse_proxy localhost:3000
+}
