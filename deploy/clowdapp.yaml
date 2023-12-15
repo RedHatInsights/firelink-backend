@@ -67,7 +67,6 @@ objects:
           enabled: True
           apiPaths: 
             - /api/firelink/
-            - /socket.io/
           whitelistPaths:
             - /health
             - /api/firelink/*
