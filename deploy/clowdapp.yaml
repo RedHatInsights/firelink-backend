@@ -42,6 +42,13 @@ objects:
             path: /health
             port: 8000
             scheme: HTTP
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+          requests:
+            cpu: 1000m
+            memory: 1Gi
         env: 
           - name: OC_SERVER
             value: ${OC_SERVER}
