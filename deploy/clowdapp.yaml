@@ -54,21 +54,6 @@ objects:
             value: ${OC_SERVER}
           - name: OC_TOKEN
             value: ${OC_TOKEN}
-          - name: APP_INTERFACE_BASE_URL
-            valueFrom:
-              secretKeyRef:
-                name: basic-auth
-                key: base_url
-          - name: APP_INTERFACE_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: basic-auth
-                key: username
-          - name: APP_INTERFACE_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: basic-auth
-                key: password
       webServices:
         public:
           enabled: True
