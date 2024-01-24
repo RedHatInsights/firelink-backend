@@ -3,12 +3,6 @@ kind: Template
 metadata:
   name: firelink-template
 parameters:
-- name: OC_SERVER
-  description: OpenShift server URL
-  required: true
-- name: OC_TOKEN
-  description: OpenShift token
-  required: true
 - name: IMAGE
   description: Image name
   required: true
@@ -51,9 +45,15 @@ objects:
             memory: 1Gi
         env: 
           - name: OC_SERVER
-            value: ${OC_SERVER}
+            valueFrom:
+              secretKeyRef:
+                name: crc-eph-bot-account
+                key: oc-login-server
           - name: OC_TOKEN
-            value: ${OC_TOKEN}
+            valueFrom:
+              secretKeyRef:
+                name: crc-eph-bot-account
+                key: oc-login-token
       webServices:
         public:
           enabled: True
