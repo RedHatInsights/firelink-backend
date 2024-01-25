@@ -38,10 +38,16 @@ This project uses pipenv for dep management. However, getting pipenv working in 
 # Deploy
 
 ## ClowdApp
-You can deploy to an OpenShift cluster running the [Clowder](https://github.com/RedHatInsights/clowder) operator with the provided template `deploy/clowder.yaml`:
+You can deploy to an OpenShift namespace running the [Clowder](https://github.com/RedHatInsights/clowder) operator with the provided template `deploy/clowder.yaml` so long as that namespace has the credentials in a secret.
 
 ```bash
-$ oc process -f deploy/clowdapp.yaml -p OC_TOKEN=$OC_TOKEN -p OC_SERVER=$OC_SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
+$ oc process -f deploy/clowdapp.yaml -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
+```
+
+If you want to supply the credentials at the command line, like if you are launching in an ephemeral environment, use the `deploy/ephemeral.yaml` template instead:
+
+```bash
+$ oc process -f deploy/ephemeral.yaml -p OC_TOKEN=$TOKEN -p OC_SERVER=$SERVER -p IMAGE="quay.io/rh_ee_addrew/firelink-backend" -p IMAGE_TAG="latest" -p ENV_NAME="env-ephemeral-arficv" | oc apply -n ephemeral-arficv -f -
 ```
 
 ## OpenShift Template

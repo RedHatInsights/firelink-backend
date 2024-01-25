@@ -41,7 +41,12 @@ def login_to_openshift():
 
 def create_gql_client():
     global _client 
-    _client = qontract.get_client()
+    try:
+        _client = qontract.get_client()
+        return
+    except Exception as e:
+        print("Failed to create gql client:", e)
+        _client = None
 
 def containsVowels(string):
     string = string.lower()
