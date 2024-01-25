@@ -1,0 +1,66 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: firelink-template
+parameters:
+- name: IMAGE
+  description: Image name
+  required: true
+- name: IMAGE_TAG
+  description: Image tag
+  required: true
+- name: ENV_NAME
+  description: ClowdEnvironment name
+  required: true
+- name: OC_TOKEN
+  description: OpenShift token
+  required: true
+- name: OC_SERVER
+  description: OpenShift server
+  required: true
+
+objects:
+- apiVersion: cloud.redhat.com/v1alpha1
+  kind: ClowdApp
+  metadata:
+    name: firelink-backend
+  spec:
+    envName: ${ENV_NAME}
+    deployments:
+    - name: service
+      podSpec:
+        image: ${IMAGE}:${IMAGE_TAG}
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 8000
+            scheme: HTTP
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+          requests:
+            cpu: 1000m
+            memory: 1Gi
+        env: 
+          - name: OC_SERVER
+            value: ${OC_SERVER}
+          - name: OC_TOKEN
+            value: ${OC_TOKEN}
+      webServices:
+        public:
+          enabled: True
+          apiPaths: 
+            - /api/firelink/
+          whitelistPaths:
+            - /health
+            - /api/firelink/*
+
+
