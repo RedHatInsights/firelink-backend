@@ -54,6 +54,21 @@ objects:
               secretKeyRef:
                 name: crc-eph-bot-account
                 key: oc-login-token
+          - name: APP_INTERFACE_BASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: firelink-graphql-creds
+                key: APP_INTERFACE_BASE_URL
+          - name: APP_INTERFACE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: firelink-graphql-creds
+                key: APP_INTERFACE_PASSWORD
+          - name: APP_INTERFACE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: firelink-graphql-creds
+                key: APP_INTERFACE_USERNAME
       webServices:
         public:
           enabled: True
