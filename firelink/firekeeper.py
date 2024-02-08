@@ -6,6 +6,8 @@ from bonfire import bonfire, qontract
 from flask_socketio import emit
 from flask import jsonify
 import json
+from bonfire.utils import AppOrComponentSelector
+
 
 
 def health():
@@ -174,10 +176,10 @@ class Apps:
             set_parameter,
             clowd_env,
             local_config_path,
-            remove_resources,
-            no_remove_resources,
-            remove_dependencies,
-            no_remove_dependencies,
+            AppOrComponentSelector(True, remove_resources, []),
+            AppOrComponentSelector(False, no_remove_resources, []),
+            AppOrComponentSelector(False, [], remove_dependencies),
+            AppOrComponentSelector(True, [], no_remove_dependencies),
             single_replicas,
             component_filter,
             local,

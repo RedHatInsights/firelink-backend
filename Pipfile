@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 flask = "*"
-crc-bonfire = "*"
+crc-bonfire = "==5.5.3"
 flask-cors = "*"
 flask-socketio = "*"
 gunicorn = "*"
