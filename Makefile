@@ -1,6 +1,6 @@
 run:
 	@echo "Starting Server..."
-	python server.py
+	flask --app=server.py run --host=0.0.0.0 --port=5001
 
 run-proxy:
 	@echo "Starting Dev Proxy..."
