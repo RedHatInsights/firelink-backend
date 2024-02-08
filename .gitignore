@@ -1,4 +1,5 @@
 .venv
 .vscode
+.DS_Store
 
 firelink/__pycache__
