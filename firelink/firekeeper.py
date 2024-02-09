@@ -267,7 +267,7 @@ class Namespace:
         else:
             try:
                 bonfire.release_reservation(None, nn, local)
-                for attempt in range(5):
+                for attempt in range(30):
                     time.sleep(1)
                     released_namespace = bonfire.get_reservation(None, nn, None)
                     response = {"completed": False, "message": "Something went wrong verifying the release"}
