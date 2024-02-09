@@ -242,8 +242,9 @@ class Namespace:
         pool_type = opts["pool_type"] if "pool_type" in opts else self.DEFAULT_POOL_TYPE
         timeout = opts["timeout"] if "timeout" in opts else self.DEFAULT_TIMEOUT
         local = opts["local"] if "local" in opts else self.DEFAULT_LOCAL
+        force = opts["force"] if "force" in opts else False
 
-        if bonfire.check_for_existing_reservation(requester):
+        if bonfire.check_for_existing_reservation(requester) and not force:
             response = {"namespace": "", "completed": False, "message": "You already have a reservation."}
         else:
             try:
