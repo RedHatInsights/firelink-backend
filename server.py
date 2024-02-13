@@ -9,6 +9,7 @@ import logging
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, path="/api/firelink/socket.io")
+port = int(os.getenv('PORT', 5000))  # Default to 5000 if not set
 
 @app.route("/health")
 def health():
@@ -43,36 +44,36 @@ def apps_list():
 @socketio.on('deploy-app')
 def apps_deploy(request):
     apps = firekeeper.Apps()
-    j = request
-    emit('monitor-deploy-app', {'message':"Starting deployment for " + j["app_names"][0]})
-    apps.deploy(j["app_names"],
-        j["source"],
-        j["get_dependencies"],
-        j["optional_deps_method"],
-        j["set_image_tag"],
-        j["ref_env"],
-        j["target_env"],
-        j["set_template_ref"],
-        j["set_parameter"],
-        j["clowd_env"],
-        j["local_config_path"],
-        j["remove_resources"],
-        j["no_remove_resources"],
-        j["remove_dependencies"],
-        j["no_remove_dependencies"],
-        j["single_replicas"],
-        j["namespace"],
-        j["name"],
-        j["requester"],
-        j["duration"],
-        j["timeout"],
-        j["no_release_on_fail"],
-        j["component_filter"],
-        j["import_secrets"],
-        j["secrets_dir"],
-        j["local"],
-        j["frontends"],
-        j["pool"])
+    emit('monitor-deploy-app', {'message':"Starting deployment for " + request["app_names"][0]})
+    print(request)
+    apps.deploy(request["app_names"],
+        request["source"],
+        request["get_dependencies"],
+        request["optional_deps_method"],
+        request["set_image_tag"],
+        request["ref_env"],
+        request["target_env"],
+        request["set_template_ref"],
+        request["set_parameter"],
+        request["clowd_env"],
+        request["local_config_path"],
+        request["remove_resources"],
+        request["no_remove_resources"],
+        request["remove_dependencies"],
+        request["no_remove_dependencies"],
+        request["single_replicas"],
+        request["namespace"],
+        request["name"],
+        request["requester"],
+        request["duration"],
+        request["timeout"],
+        request["no_release_on_fail"],
+        request["component_filter"],
+        request["import_secrets"],
+        request["secrets_dir"],
+        request["local"],
+        request["frontends"],
+        request["pool"])
 
 @app.before_request
 def log_request_info():
@@ -89,7 +90,7 @@ CORS(app)
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, port=port)
 
 
 
