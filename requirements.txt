@@ -1,6 +1,6 @@
 anytree==2.12.1
 app-common-python==0.2.6
-bidict==0.22.1
+bidict==0.23.0
 blinker==1.7.0
 cached-property==1.5.2
 cachetools==5.3.2
@@ -8,7 +8,7 @@ certifi==2024.2.2
 chardet==3.0.4
 charset-normalizer==3.3.2
 click==8.1.7
-crc-bonfire==5.5.3
+crc-bonfire==5.6.0
 Flask==3.0.2
 Flask-Cors==4.0.0
 Flask-SocketIO==5.3.6
