@@ -2,7 +2,6 @@ import sys
 sys.path.append('.')
 from firelink.Namespace import Namespace
 import json
-import time 
 
 def _reserve_namespace():
     ns_controller = Namespace()
