@@ -19,7 +19,7 @@ def test_namespace_reserve():
 
 def test_namespace_release():
     ns_controller = Namespace()
-    namespace = json.loads(ns_controller.reserve({"force": True, "name": ""}))
+    namespace = json.loads(ns_controller.reserve({"force": False, "pool": "default", "duration": "1h", "requester": "firelink-backend-tests"}))  
     # A little delay just to let stuff settle
     time.sleep(5)
     response = json.loads(ns_controller.release({"namespace": namespace["namespace"]}))
@@ -35,7 +35,8 @@ def test_namespace_release_no_name_specified():
 
 def test_namespace_describe():
     ns_controller = Namespace()
-    namespace = json.loads(ns_controller.reserve({"force": True, "name": ""}))
+    namespace = json.loads(ns_controller.reserve({"force": False, "pool": "default", "duration": "1h", "requester": "firelink-backend-tests"}))  
     response = json.loads(ns_controller.describe(namespace["namespace"]))
     assert response["completed"] == True
+    ns_controller.release({"namespace": namespace["namespace"]})
 
