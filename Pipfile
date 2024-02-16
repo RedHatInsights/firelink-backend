@@ -9,6 +9,7 @@ crc-bonfire = "==5.6.0"
 flask-cors = "==4.0.0"
 flask-socketio = "==5.3.6"
 gunicorn = "==21.2.0"
+pytest = "==8.0.0"
 
 [dev-packages]
 

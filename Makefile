@@ -16,3 +16,6 @@ build:
 
 run-docker:
 	docker run -e OC_TOKEN -e OC_SERVER -p 8000:8000 firelink-backend:latest
+
+test:
+	python -m pytest tests/
