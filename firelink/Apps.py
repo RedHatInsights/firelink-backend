@@ -35,6 +35,7 @@ class Apps:
         appsArray.sort(key=lambda app: app['name'])
         return appsArray
 
+    # TODO: There's no error handling here at all
     def list(self, 
         source="appsre", 
         local_config_path="", 
@@ -107,7 +108,7 @@ class Apps:
         try:
             self.helpers.route_guard()
         except Exception as e:
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': "Namespace Operator not detected on cluster"})
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': "Namespace Operator not detected on cluster", 'completed': False})
             return
 
         ns, reserved_new_ns = bonfire._get_namespace(request["namespace"], request["name"], request["requester"], request["duration"], request["pool"], request["timeout"], request["local"], True, True)
@@ -117,16 +118,16 @@ class Apps:
 
         clowd_env = self._get_clowdenv_for_ns(ns)
         if not clowd_env:
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Could not find a ClowdEnvironment tied to ns '{ns}'."})
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Could not find a ClowdEnvironment tied to ns '{ns}'.", 'completed': False})
             return
 
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message': "Processing app templates..."})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message': "Processing app templates...", 'completed': False})
 
         try:
             self._process_apps(request, ns, reserved_new_ns)
         except (bonfire.TimedOutError, bonfire.FatalError, Exception) as err:
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Hit {err.__class__.__name__.lower()} error"})
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Hit {err.__class__.__name__.lower()} error", 'completed': False})
             self._deploy_error_handler(err, request, ns, reserved_new_ns)
         else:
-            self.emit(self.END_EVENT, {'message': f"Successfully deployed to namespace {ns}"})
+            self.emit(self.END_EVENT, {'message': f"Successfully deployed to namespace {ns}", 'completed': True})
 
