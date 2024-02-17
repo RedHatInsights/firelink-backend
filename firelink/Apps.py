@@ -93,14 +93,14 @@ class Apps:
         )
 
         if not apps_config["items"]:
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"No configurations found to apply!"})
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"No configurations found to apply!", 'completed': False})
             raise bonfire.FatalError("No configurations found to apply!")
         
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Applying app configs..."})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Applying app configs...", 'completed': False})
         bonfire.apply_config(ns, apps_config)
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"])})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]), 'completed': False})
         bonfire._wait_on_namespace_resources(ns, request["timeout"])
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Deployment complete!"})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Deployment complete!", 'completed': True})
         
         return apps_config
 
@@ -111,7 +111,12 @@ class Apps:
             self.emit(self.DEPLOY_ERROR_EVENT, {'message': "Namespace Operator not detected on cluster", 'completed': False})
             return
 
-        ns, reserved_new_ns = bonfire._get_namespace(request["namespace"], request["name"], request["requester"], request["duration"], request["pool"], request["timeout"], request["local"], True, True)
+        try:
+            ns, reserved_new_ns = bonfire._get_namespace(request["namespace"], request["name"], request["requester"], request["duration"], request["pool"], request["timeout"], request["local"], True, True)
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Using namespace {ns}", 'completed': False, 'namespace': ns})
+        except Exception as e:
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Namespace failure: {str(e)}", 'completed': False})
+            return
         
         if request["import_secrets"]:
             bonfire.import_secrets_from_dir(request["secrets_dir"])
@@ -120,6 +125,7 @@ class Apps:
         if not clowd_env:
             self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Could not find a ClowdEnvironment tied to ns '{ns}'.", 'completed': False})
             return
+        request["clowd_env"] = clowd_env
 
         self.emit(self.DEPLOY_MONITOR_EVENT, {'message': "Processing app templates...", 'completed': False})
 
