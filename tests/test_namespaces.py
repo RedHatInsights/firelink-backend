@@ -5,7 +5,7 @@ import json
 
 def _reserve_namespace():
     ns_controller = Namespace()
-    response = json.loads(ns_controller.reserve({"force": False, "pool": "default", "duration": "1h", "requester": "firelink-backend-tests"}))    
+    response = json.loads(ns_controller.reserve({"force": False, "pool": "default", "duration": "10m", "requester": "firelink-backend-tests"}))    
     return response
 
 def test_namespace_list():
@@ -34,5 +34,12 @@ def test_namespace_describe():
     namespace = _reserve_namespace() 
     response = json.loads(ns_controller.describe(namespace["namespace"]))
     assert response["completed"] == True
+    ns_controller.release({"namespace": namespace["namespace"]})
+
+def test_namespace_reserve_already_exists():
+    ns_controller = Namespace()
+    namespace = _reserve_namespace() 
+    response = json.loads(ns_controller.reserve({"force": False, "pool": "default", "duration": "10m", "requester": "firelink-backend-tests"}))    
+    assert response["completed"] == False
     ns_controller.release({"namespace": namespace["namespace"]})
 
