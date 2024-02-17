@@ -9,7 +9,9 @@ def dummy_emit(event, data):
 class Apps:
     DEPLOY_ERROR_EVENT = 'error-deploy-app'
     DEPLOY_MONITOR_EVENT = 'monitor-deploy-app'
-    END_EVENT = 'end-deploy-app'
+    DEPLOY_END_EVENT = 'end-deploy-app'
+    DEPLOY_ERROR_EVENT = 'error-deploy-app'
+    
 
     def __init__(self, emit=dummy_emit, jsonify=json.dumps):
         self.helpers = AdaptorClassHelpers()
@@ -52,14 +54,12 @@ class Apps:
     def _deploy_error_handler(self, err, request, ns, reserved_new_ns):
         try:
             if not request["no_release_on_fail"] and reserved_new_ns:
-                self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Releasing namespace " + ns})
+                self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Releasing namespace " + ns, 'completed': False, 'error': False})
                 bonfire.release_reservation(namespace=ns)
-        finally:
-            msg = "Deploy failed :("
-            if str(err):
-                msg += f": {str(err)}"
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': msg})
-        self.emit(self.END_EVENT, {'message: error': str(err)})
+        except Exception as e:
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Failed to release namespace {ns}: {str(e)}", 'completed': False, 'error': True})
+        
+        self.emit(self.DEPLOY_END_EVENT, {'message: error': str(err), 'completed': False, 'error': True})
 
     def _get_clowdenv_for_ns(self, ns):
         cloud_env_reponse = bonfire.find_clowd_env_for_ns(ns)
@@ -93,14 +93,14 @@ class Apps:
         )
 
         if not apps_config["items"]:
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"No configurations found to apply!", 'completed': False})
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"No configurations found to apply!", 'completed': False, 'error': True})
             raise bonfire.FatalError("No configurations found to apply!")
         
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Applying app configs...", 'completed': False})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Applying app configs...", 'completed': False, 'error': False})
         bonfire.apply_config(ns, apps_config)
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]), 'completed': False})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]), 'completed': False, 'error': False})
         bonfire._wait_on_namespace_resources(ns, request["timeout"])
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Deployment complete!", 'completed': True})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Deployment complete!", 'completed': True , 'error': False})
         
         return apps_config
 
@@ -108,14 +108,14 @@ class Apps:
         try:
             self.helpers.route_guard()
         except Exception as e:
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': "Namespace Operator not detected on cluster", 'completed': False})
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': "Namespace Operator not detected on cluster", 'completed': False, 'error': True})
             return
 
         try:
             ns, reserved_new_ns = bonfire._get_namespace(request["namespace"], request["name"], request["requester"], request["duration"], request["pool"], request["timeout"], request["local"], True, True)
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Using namespace {ns}", 'completed': False, 'namespace': ns})
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Using namespace {ns}", 'completed': False, 'namespace': ns, 'error': False})
         except Exception as e:
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Namespace failure: {str(e)}", 'completed': False})
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Namespace failure: {str(e)}", 'completed': False, 'error': True})
             return
         
         if request["import_secrets"]:
@@ -123,17 +123,18 @@ class Apps:
 
         clowd_env = self._get_clowdenv_for_ns(ns)
         if not clowd_env:
-            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Could not find a ClowdEnvironment tied to ns '{ns}'.", 'completed': False})
+            self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Could not find a ClowdEnvironment tied to ns '{ns}'.", 'completed': False, 'error': True})
             return
         request["clowd_env"] = clowd_env
 
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message': "Processing app templates...", 'completed': False})
+        self.emit(self.DEPLOY_MONITOR_EVENT, {'message': "Processing app templates...", 'completed': False, 'error': False})
 
         try:
             self._process_apps(request, ns, reserved_new_ns)
         except (bonfire.TimedOutError, bonfire.FatalError, Exception) as err:
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Hit {err.__class__.__name__.lower()} error", 'completed': False})
+            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Hit {err.__class__.__name__.lower()} error", 'completed': False, 'error': True})
             self._deploy_error_handler(err, request, ns, reserved_new_ns)
+            return
         else:
-            self.emit(self.END_EVENT, {'message': f"Successfully deployed to namespace {ns}", 'completed': True})
+            self.emit(self.DEPLOY_END_EVENT, {'message': f"Successfully deployed to namespace {ns}", 'completed': True, 'error': False})
 
