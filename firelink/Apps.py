@@ -59,7 +59,7 @@ class Apps:
         except Exception as e:
             self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Failed to release namespace {ns}: {str(e)}", 'completed': False, 'error': True})
         
-        self.emit(self.DEPLOY_END_EVENT, {'message: error': str(err), 'completed': False, 'error': True})
+        self.emit(self.DEPLOY_END_EVENT, {'message' : 'Deployment Failed: ' + str(err), 'completed': False, 'error': True})
 
     def _get_clowdenv_for_ns(self, ns):
         cloud_env_reponse = bonfire.find_clowd_env_for_ns(ns)
@@ -100,7 +100,6 @@ class Apps:
         bonfire.apply_config(ns, apps_config)
         self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]), 'completed': False, 'error': False})
         bonfire._wait_on_namespace_resources(ns, request["timeout"])
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Deployment complete!", 'completed': True , 'error': False})
         
         return apps_config
 
@@ -132,7 +131,6 @@ class Apps:
         try:
             self._process_apps(request, ns, reserved_new_ns)
         except (bonfire.TimedOutError, bonfire.FatalError, Exception) as err:
-            self.emit(self.DEPLOY_MONITOR_EVENT, {'message': f"Hit {err.__class__.__name__.lower()} error", 'completed': False, 'error': True})
             self._deploy_error_handler(err, request, ns, reserved_new_ns)
             return
         else:
