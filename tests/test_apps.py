@@ -3,8 +3,33 @@ sys.path.append('.')
 from firelink.Apps import Apps
 from firelink.Namespace import Namespace
 import json
+import multiprocessing
+import pytest
 
-    
+def worker(apps):
+    return apps.list()
+
+class TestAppsListConcurrency:
+    @pytest.fixture(scope="class")
+    def apps_instance(self):
+        return Apps()
+
+    def test_apps_list_concurrency(self, apps_instance):
+        num_processes = 10  # Number of concurrent processes
+        pool = multiprocessing.Pool(processes=num_processes)
+
+        results = pool.map(worker, [apps_instance] * num_processes)
+
+        # Check for consistency across all results
+        reference_result = results[0]
+        for result in results[1:]:
+            assert result == reference_result, "Inconsistent results from concurrent execution"
+
+        apps_list = reference_result
+        assert len(apps_list) > 0, "Expected non-empty list of apps"
+
+        pool.close()
+        pool.join()
 
 def test_apps_list():
     apps = Apps().list()

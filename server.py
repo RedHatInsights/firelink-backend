@@ -5,6 +5,7 @@ from flask import jsonify
 from firelink.Apps import Apps
 from firelink.Namespace import Namespace
 from firelink.FlaskAppHelpers import FlaskAppHelpers
+from firelink.Metrics import NamespaceResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import os
@@ -32,6 +33,13 @@ def health():
 def namespaces_list():
     return Namespace(jsonify).list()
 
+@app.route("/api/firelink/namespace/resource_metrics")
+def namespace_resource_metrics():
+    namespaces = Namespace(lambda x:x).list()
+    namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]
+    metrics = NamespaceResourceMetrics().get_resources_for_namespaces(namespaces)
+    return metrics
+
 @app.route("/api/firelink/namespace/reserve", methods=["POST"])
 def namespace_reserve():
     return Namespace(jsonify).reserve(request.json)
@@ -50,7 +58,7 @@ def apps_list():
 
 @socketio.on('deploy-app')
 def apps_deploy(request):
-    emit('monitor-deploy-app', {'message':"Starting deployment for " + request["app_names"][0]})
+    emit('monitor-deploy-app', {'message':"Starting deployment for apps: ".join(request["app_names"])})
     Apps(emit, jsonify).deploy(request)
 
 if __name__ == '__main__':
