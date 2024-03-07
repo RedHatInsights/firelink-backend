@@ -89,7 +89,44 @@ class Namespace:
         self.helpers.route_guard()
         try:
             descriptionText = bonfire.describe_namespace(namespace)
-            response = {"completed": True, "message": descriptionText}
+            response = {"completed": True, "message": self. _parse_description_to_json(descriptionText)}
         except Exception as e:
             response = {"completed": False, "message": "ERROR: " + str(e)}
         return self.jsonify(response)
+
+    def _parse_description_to_json(self, description_text):
+        lines = description_text.strip().split('\n')
+        result = {}
+        keycloak_admin = {}
+        gateway = {}
+
+        for line in lines:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip().lower().replace(' ', '_')
+                value = value.strip()
+
+                if 'keycloak_admin_route' in key:
+                    keycloak_admin['route'] = value
+                elif 'keycloak_admin_login' in key:
+                    username, password = value.split(' | ')
+                    keycloak_admin['login'] = {'username': username, 'password': password}
+                elif 'gateway_route' in key:
+                    gateway['route'] = value
+                elif 'default_user_login' in key:
+                    username, password = value.split(' | ')
+                    gateway['login'] = {'username': username, 'password': password}
+                else:
+                    result[key] = value
+            elif 'deployed' in line:
+                clowdapps, frontends = line.split(',')
+                result['clowdapps_deployed'] = int(clowdapps.split()[0])
+                result['frontends_deployed'] = int(frontends.split()[0])
+
+        if keycloak_admin:
+            result['keycloak_admin'] = keycloak_admin
+        if gateway:
+            result['gateway'] = gateway
+
+        return result
+

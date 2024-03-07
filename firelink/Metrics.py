@@ -62,7 +62,7 @@ class NamespaceResourceMetrics:
             all_resources[namespace] = self.get_resources_for_namespace(namespace)
         return all_resources
 
-class Metrics:
+class ClusterResourceMetrics:
     def all_top_pods(self):
         result = ocviapy.oc("adm", "top", "pod", "--all-namespaces")
         parsed_result = self._parse_adm_command_result(result)

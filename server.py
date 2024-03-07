@@ -6,6 +6,7 @@ from firelink.Apps import Apps
 from firelink.Namespace import Namespace
 from firelink.FlaskAppHelpers import FlaskAppHelpers
 from firelink.Metrics import NamespaceResourceMetrics
+from firelink.Metrics import ClusterResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import os
@@ -29,6 +30,14 @@ app.before_request_funcs = [(None, helpers.login_to_openshift(), helpers.create_
 def health():
     return ("", 200) if FlaskAppHelpers().health() else ("", 500)
 
+@app.route("/api/firelink/cluster/top_pods")
+def cluster_top_pods():
+    return ClusterResourceMetrics().all_top_pods()
+
+@app.route("/api/firelink/cluster/top_nodes")
+def cluster_top_nodes():
+    return ClusterResourceMetrics().top_nodes()
+
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
     return Namespace(jsonify).list()
@@ -39,6 +48,10 @@ def namespace_resource_metrics():
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]
     metrics = NamespaceResourceMetrics().get_resources_for_namespaces(namespaces)
     return metrics
+
+@app.route("/api/firelink/namespace/top_pods", methods=["POST"])
+def namespace_top_pods():
+    return ClusterResourceMetrics().top_pods(request.json["namespace"])
 
 @app.route("/api/firelink/namespace/reserve", methods=["POST"])
 def namespace_reserve():
