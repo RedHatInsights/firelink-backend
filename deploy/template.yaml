@@ -22,7 +22,7 @@ objects:
     metadata:
       name: firelink
     spec:
-      replicas: 1
+      replicas: 3
       selector:
         matchLabels:
           app: firelink
@@ -53,6 +53,7 @@ objects:
         - protocol: TCP
           port: 80
           targetPort: 8000
+      sessionAffinity: ClientIP
 
   - apiVersion: route.openshift.io/v1
     kind: Route
