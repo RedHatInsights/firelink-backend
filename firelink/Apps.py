@@ -98,8 +98,8 @@ class Apps:
         
         self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Applying app configs...", 'completed': False, 'error': False})
         bonfire.apply_config(ns, apps_config)
-        self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]), 'completed': False, 'error': False})
-        bonfire._wait_on_namespace_resources(ns, request["timeout"])
+        #self.emit(self.DEPLOY_MONITOR_EVENT, {'message':"Waiting on resources for max of seconds: " + str(request["timeout"]) + ". This will continue in the background if you close this modal. ", 'completed': False, 'error': False})
+        #bonfire._wait_on_namespace_resources(ns, request["timeout"])
         
         return apps_config
 
@@ -134,5 +134,5 @@ class Apps:
             self._deploy_error_handler(err, request, ns, reserved_new_ns)
             return
         else:
-            self.emit(self.DEPLOY_END_EVENT, {'message': f"Successfully deployed to namespace {ns}", 'completed': True, 'error': False})
+            self.emit(self.DEPLOY_END_EVENT, {'message': f"Deployed to {ns}. Resources may take additional time to become ready.", 'completed': True, 'error': False})
 
