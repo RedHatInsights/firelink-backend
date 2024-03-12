@@ -173,6 +173,10 @@ class ClusterResourceMetrics:
             allocatable_cpu = node_info.status.allocatable["cpu"]
             allocatable_memory = node_info.status.allocatable["memory"]
 
+            # Convert memory usage and allocatable memory to Gi
+            memory_usage_gi = f"{int(item['usage']['memory'].replace('Ki', '')) / 1024 / 1024:.2f}Gi"
+            allocatable_memory_gi = f"{int(allocatable_memory.replace('Ki', '')) / 1024 / 1024:.2f}Gi"
+
             # Calculate CPU and memory percentages
             cpu_percentage = f"{int(item['usage']['cpu'].replace('m', '')) / int(allocatable_cpu.replace('m', '')) * 100:.2f}%"
             memory_percentage = f"{int(item['usage']['memory'].replace('Ki', '')) / int(allocatable_memory.replace('Ki', '')) * 100:.2f}%"
@@ -181,9 +185,8 @@ class ClusterResourceMetrics:
                 "NAME": node_name,
                 "CPU(cores)": cpu_usage,
                 "CPU%": cpu_percentage,
-                "MEMORY(bytes)": memory_usage,
+                "MEMORY(bytes)": memory_usage_gi,
                 "MEMORY%": memory_percentage
             }
             parsed_metrics.append(entry)
         return parsed_metrics
-
