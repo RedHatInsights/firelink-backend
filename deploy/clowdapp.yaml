@@ -22,7 +22,7 @@ objects:
     envName: ${ENV_NAME}
     deployments:
     - name: service
-      replicas: 3 
+      replicas: 1 
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         livenessProbe:
