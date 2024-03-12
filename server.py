@@ -1,3 +1,4 @@
+import logging
 from urllib import request
 from flask import Flask
 from flask import request
@@ -9,6 +10,7 @@ from firelink.Metrics import NamespaceResourceMetrics
 from firelink.Metrics import ClusterResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+import sys
 import os
 
 DEFAULT_PORT = 5000
@@ -18,11 +20,20 @@ socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, path="/api/
 port = int(os.getenv('PORT', DEFAULT_PORT))
 helpers = FlaskAppHelpers()
 
+# Configure logging to stdout
+logging.basicConfig(
+    # We don't want INFO but everything else
+    level=logging.WARNING,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
+
 CORS(app)
 
 @app.before_request
 def log_request_info():
-    app.logger.info(f"Request: {request.method} {request.url} - {request.remote_addr}")
+    logging.info(f"Request: {request.method} {request.url} - {request.remote_addr}")
+
 # This line has to come after before_request is defined or it freaks out
 app.before_request_funcs = [(None, helpers.login_to_openshift(), helpers.create_gql_client())]
 
@@ -71,8 +82,11 @@ def apps_list():
 
 @socketio.on('deploy-app')
 def apps_deploy(request):
-    emit('monitor-deploy-app', {'message':"Starting deployment for apps: ".join(request["app_names"])})
-    Apps(emit, jsonify).deploy(request)
+    try:
+        emit('monitor-deploy-app', {'message':"Starting deployment for apps: ".join(request["app_names"])})
+        Apps(emit, jsonify).deploy(request)
+    except Exception as e:
+        emit('error-deploy-app', {'message':f"Server error deploying apps: {str(e)}"})
 
 if __name__ == '__main__':
     socketio.run(app, port=port)
