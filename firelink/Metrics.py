@@ -158,11 +158,14 @@ class ClusterResourceMetrics:
         return parsed_metrics
 
     def _convert_to_gi(self, value):
+        if value == '0':
+            return '0Gi'
         units = {"Ki": 1/1024/1024, "Mi": 1/1024, "Gi": 1}
         match = re.match(r"(\d+)(Ki|Mi|Gi)", value)
         if match:
             return f"{int(match.group(1)) * units[match.group(2)]:.2f}Gi"
         raise ValueError(f"Unsupported memory unit in '{value}'")
+
 
     def _calculate_percentage(self, usage, allocatable):
         usage_value = self._convert_to_base_unit(usage)
