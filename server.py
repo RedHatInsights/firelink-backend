@@ -12,10 +12,12 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import sys
 import os
+from flask_caching import Cache
 
 DEFAULT_PORT = 5000
 
 app = Flask(__name__)
+cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=600, path="/api/firelink/socket.io")
 port = int(os.getenv('PORT', DEFAULT_PORT))
 helpers = FlaskAppHelpers()
@@ -55,6 +57,7 @@ def namespaces_list():
 
 # Get resources for all namespaces
 @app.route("/api/firelink/namespace/resource_metrics")
+@cache.cached(timeout=120)
 def namespace_resource_metrics():
     namespaces = Namespace(lambda x:x).list()
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]

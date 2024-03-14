@@ -11,6 +11,7 @@ flask-socketio = "==5.3.6"
 gunicorn = "==21.2.0"
 pytest = "==8.0.0"
 kubernetes = "*"
+flask-caching = "*"
 
 [dev-packages]
 
