@@ -53,12 +53,18 @@ def cluster_top_nodes():
 def namespaces_list():
     return Namespace(jsonify).list()
 
+# Get resources for all namespaces
 @app.route("/api/firelink/namespace/resource_metrics")
 def namespace_resource_metrics():
     namespaces = Namespace(lambda x:x).list()
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]
     metrics = NamespaceResourceMetrics().get_resources_for_namespaces(namespaces)
     return metrics
+
+# Get resources for a single namespace
+@app.route("/api/firelink/namespace/resource_metrics/<namespace>")
+def namespace_resource_metrics_single(namespace):
+    return NamespaceResourceMetrics().get_resources_for_namespace(namespace)
 
 @app.route("/api/firelink/namespace/top_pods", methods=["POST"])
 def namespace_top_pods():
