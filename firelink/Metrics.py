@@ -118,75 +118,67 @@ class ClusterResourceMetrics:
         self.custom_api = client.CustomObjectsApi()
 
     def all_top_pods(self):
-        metrics = self.custom_api.list_cluster_custom_object(
-            group="metrics.k8s.io",
-            version="v1beta1",
-            plural="pods"
-        )
-        parsed_metrics = self._parse_pod_metrics(metrics)
-        return parsed_metrics
+        metrics = self.custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
+        return self._parse_pod_metrics(metrics)
 
     def top_pods(self, namespace):
-        metrics = self.custom_api.list_namespaced_custom_object(
-            group="metrics.k8s.io",
-            version="v1beta1",
-            namespace=namespace,
-            plural="pods"
-        )
-        parsed_metrics = self._parse_pod_metrics(metrics)
-        return parsed_metrics
+        metrics = self.custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
+        return self._parse_pod_metrics(metrics)
 
     def top_nodes(self):
-        metrics = self.custom_api.list_cluster_custom_object(
-            group="metrics.k8s.io",
-            version="v1beta1",
-            plural="nodes"
-        )
-        parsed_metrics = self._parse_node_metrics(metrics)
-        return parsed_metrics
+        metrics = self.custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="nodes")
+        return self._parse_node_metrics(metrics)
 
     def _parse_pod_metrics(self, metrics):
-        parsed_metrics = []
-        for item in metrics["items"]:
-            pod_name = item["metadata"]["name"]
-            namespace = item["metadata"]["namespace"]
-            cpu_usage = item["containers"][0]["usage"]["cpu"]
-            memory_usage = item["containers"][0]["usage"]["memory"]
-            entry = {
-                "NAME": f"{namespace}/{pod_name}",
-                "CPU(cores)": cpu_usage,
-                "MEMORY(bytes)": memory_usage
-            }
-            parsed_metrics.append(entry)
-        return parsed_metrics
+        return [
+            {"NAME": f"{item['metadata']['namespace']}/{item['metadata']['name']}",
+             "CPU(cores)": item["containers"][0]["usage"]["cpu"],
+             "MEMORY(bytes)": self._convert_to_gi(item["containers"][0]["usage"]["memory"])}
+            for item in metrics["items"]
+        ]
 
     def _parse_node_metrics(self, metrics):
-        parsed_metrics = []
         v1_api = client.CoreV1Api()
+        parsed_metrics = []
         for item in metrics["items"]:
             node_name = item["metadata"]["name"]
-            cpu_usage = item["usage"]["cpu"]
-            memory_usage = item["usage"]["memory"]
-
-            # Fetch the node information to get the allocatable resources
-            node_info = v1_api.read_node(node_name)
-            allocatable_cpu = node_info.status.allocatable["cpu"]
-            allocatable_memory = node_info.status.allocatable["memory"]
-
-            # Convert memory usage and allocatable memory to Gi
-            memory_usage_gi = f"{int(item['usage']['memory'].replace('Ki', '')) / 1024 / 1024:.2f}Gi"
-            allocatable_memory_gi = f"{int(allocatable_memory.replace('Ki', '')) / 1024 / 1024:.2f}Gi"
-
-            # Calculate CPU and memory percentages
-            cpu_percentage = f"{int(item['usage']['cpu'].replace('m', '')) / int(allocatable_cpu.replace('m', '')) * 100:.2f}%"
-            memory_percentage = f"{int(item['usage']['memory'].replace('Ki', '')) / int(allocatable_memory.replace('Ki', '')) * 100:.2f}%"
-
-            entry = {
-                "NAME": node_name,
-                "CPU(cores)": cpu_usage,
-                "CPU%": cpu_percentage,
-                "MEMORY(bytes)": memory_usage_gi,
-                "MEMORY%": memory_percentage
-            }
-            parsed_metrics.append(entry)
+            try:
+                node_info = v1_api.read_node(node_name)
+                parsed_metrics.append({
+                    "NAME": node_name,
+                    "CPU(cores)": item["usage"]["cpu"],
+                    "CPU%": self._calculate_percentage(item["usage"]["cpu"], node_info.status.allocatable["cpu"]),
+                    "MEMORY(bytes)": self._convert_to_gi(item["usage"]["memory"]),
+                    "MEMORY%": self._calculate_percentage(item["usage"]["memory"], node_info.status.allocatable["memory"])
+                })
+            except client.rest.ApiException as e:
+                print(f"API error for node {node_name}: {e}")
+            except ValueError as e:
+                print(f"Value error processing metrics for node {node_name}: {e}")
         return parsed_metrics
+
+    def _convert_to_gi(self, value):
+        if value == '0':
+            return '0Gi'
+        units = {"Ki": 1/1024/1024, "Mi": 1/1024, "Gi": 1}
+        match = re.match(r"(\d+)(Ki|Mi|Gi)", value)
+        if match:
+            return f"{int(match.group(1)) * units[match.group(2)]:.2f}Gi"
+        raise ValueError(f"Unsupported memory unit in '{value}'")
+
+
+    def _calculate_percentage(self, usage, allocatable):
+        usage_value = self._convert_to_base_unit(usage)
+        allocatable_value = self._convert_to_base_unit(allocatable)
+        if allocatable_value == 0:
+            return "0%"
+        return f"{(usage_value / allocatable_value) * 100:.2f}%"
+
+    def _convert_to_base_unit(self, value):
+        units = {"Ki": 1, "Mi": 1024, "Gi": 1024*1024}
+        match = re.match(r"(\d+)(Ki|Mi|Gi|m)?", value)
+        if match:
+            unit = match.group(2) or "Ki"  # Assume "Ki" if no unit is present, "m" is treated as "Ki"
+            return int(match.group(1)) * units.get(unit, 1)
+        raise ValueError(f"Invalid resource value '{value}'")
+
