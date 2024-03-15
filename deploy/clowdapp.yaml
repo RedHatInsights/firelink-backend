@@ -72,6 +72,18 @@ objects:
                 key: APP_INTERFACE_USERNAME
           - name: CLIENT_ID
             value: firelink
+          - name: TELEMETRY_ENABLED
+            value: "True"
+          - name: ELASTICSEARCH_APIKEY
+            valueFrom:
+              secretKeyRef:
+                name: elastcisearch
+                key: api-key
+          - name: ELASTICSEARCH_HOST
+            valueFrom:
+              secretKeyRef:
+                name: elastcisearch
+                key: host
       webServices:
         public:
           enabled: True

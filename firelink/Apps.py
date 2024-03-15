@@ -1,7 +1,9 @@
 from bonfire import bonfire
 from bonfire.utils import AppOrComponentSelector
+from bonfire.elastic_logging import ElasticLogger
 from firelink.AdaptorClassHelpers import AdaptorClassHelpers
 import json
+import os 
 
 def dummy_emit(event, data):
     pass
@@ -14,9 +16,15 @@ class Apps:
     
 
     def __init__(self, emit=dummy_emit, jsonify=json.dumps):
+        self.elastic_logger = ElasticLogger()
         self.helpers = AdaptorClassHelpers()
         self.jsonify = jsonify
         self.emit = emit
+
+    def _log_to_elastic(self, message="successful deployment", success=True):
+        telemetry_enabled = os.environ.get('ENABLE_TELEMETRY', 'False').lower() == 'true'
+        if telemetry_enabled:
+            self.elastic_logger.send_telemetry(message, success)
 
     def _app_name_contains_vowels(self, string):
         string = string.lower()
@@ -59,6 +67,7 @@ class Apps:
         except Exception as e:
             self.emit(self.DEPLOY_ERROR_EVENT, {'message': f"Failed to release namespace {ns}: {str(e)}", 'completed': False, 'error': True})
         
+        self._log_to_elastic(f"deployment failed: {str(err)}", success=False)
         self.emit(self.DEPLOY_END_EVENT, {'message' : 'Deployment Failed: ' + str(err), 'completed': False, 'error': True})
 
     def _get_clowdenv_for_ns(self, ns):
@@ -104,6 +113,7 @@ class Apps:
         return apps_config
 
     def deploy(self, request):
+        
         try:
             self.helpers.route_guard()
         except Exception as e:
@@ -135,4 +145,4 @@ class Apps:
             return
         else:
             self.emit(self.DEPLOY_END_EVENT, {'message': f"Deployed to {ns}. Resources may take additional time to become ready.", 'completed': True, 'error': False})
-
+            self._log_to_elastic(f"successful deployment to {ns}", success=True)
