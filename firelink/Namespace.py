@@ -88,7 +88,7 @@ class Namespace:
     def describe(self, namespace):
         self.helpers.route_guard()
         try:
-            descriptionText = bonfire.describe_namespace(namespace)
+            descriptionText = bonfire.describe_namespace(namespace, "string")
             response = {"completed": True, "message": self. _parse_description_to_json(descriptionText)}
         except Exception as e:
             response = {"completed": False, "message": "ERROR: " + str(e)}
