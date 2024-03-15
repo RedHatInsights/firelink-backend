@@ -78,7 +78,7 @@ objects:
             valueFrom:
               secretKeyRef:
                 name: elastcisearch
-                key: api-ley
+                key: api-key
           - name: ELASTICSEARCH_HOST
             valueFrom:
               secretKeyRef:
