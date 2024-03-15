@@ -72,7 +72,7 @@ objects:
                 key: APP_INTERFACE_USERNAME
           - name: CLIENT_ID
             value: firelink
-          - name: TELEMETRY_ENABLED
+          - name: ENABLE_TELEMETRY
             value: "True"
           - name: ELASTICSEARCH_APIKEY
             valueFrom:
