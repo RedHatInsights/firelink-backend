@@ -74,6 +74,16 @@ objects:
             value: firelink
           - name: TELEMETRY_ENABLED
             value: "True"
+          - name: ELASTICSEARCH_APIKEY
+            valueFrom:
+              secretKeyRef:
+                name: elastcisearch
+                key: api-ley
+          - name: ELASTICSEARCH_HOST
+            valueFrom:
+              secretKeyRef:
+                name: elastcisearch
+                key: host
       webServices:
         public:
           enabled: True
