@@ -72,6 +72,8 @@ objects:
                 key: APP_INTERFACE_USERNAME
           - name: CLIENT_ID
             value: firelink
+          - name: TELEMETRY_ENABLED
+            value: "True"
       webServices:
         public:
           enabled: True
