@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "c4a3554a2809260bcaf0aebf44d47104153fbed45f2db1748e7659e0b1b1dd55"
+            "sha256": "dced73fee8d23f91126c8432e9a51b375be75d25535547f650fa4523fb70b2d7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -191,12 +191,12 @@
         },
         "crc-bonfire": {
             "hashes": [
-                "sha256:2a799f2181940e9a118131d94beb4909b86de41edb6fbb53fb7e8bb01b47c8a7",
-                "sha256:8ff67ba5399c0c7ee6a3ac05f8e05336e043df4da6e8e1c855583c27e24a66ee"
+                "sha256:d9848acc005067613c6e8df0703aa1b14572619986dbed61df6858abc9e3d98f",
+                "sha256:dd6281ceb82fc6a563d87a2bd62e6c967d66d6e625cbf5026ff942c18f479411"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.6'",
-            "version": "==5.6.0"
+            "version": "==5.7.0"
         },
         "flask": {
             "hashes": [
