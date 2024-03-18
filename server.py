@@ -24,8 +24,7 @@ helpers = FlaskAppHelpers()
 
 # Configure logging to stdout
 logging.basicConfig(
-    # We don't want INFO but everything else
-    level=logging.WARNING,
+    level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     stream=sys.stdout
 )
