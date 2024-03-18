@@ -92,7 +92,7 @@ objects:
           whitelistPaths:
             - /health
             - /api/firelink/*
-          sessionAffinity: true
+          sessionAffinity: True
 
 
 
