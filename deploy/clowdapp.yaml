@@ -22,7 +22,7 @@ objects:
     envName: ${ENV_NAME}
     deployments:
     - name: service
-      replicas: 1 
+      replicas: 3 
       podSpec:
         image: ${IMAGE}:${IMAGE_TAG}
         livenessProbe:
@@ -92,5 +92,7 @@ objects:
           whitelistPaths:
             - /health
             - /api/firelink/*
+          sessionAffinity: true
+
 
 
