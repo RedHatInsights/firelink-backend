@@ -84,6 +84,16 @@ objects:
               secretKeyRef:
                 name: elastcisearch
                 key: host
+          - name: GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: insightsdroid-github
+                key: token
+          - name: GITHUB_API_URL
+            valueFrom:
+              secretKeyRef:
+                name: insightsdroid-github
+                key: mirror_url
       webServices:
         public:
           enabled: True
@@ -93,6 +103,7 @@ objects:
             - /health
             - /api/firelink/*
           sessionAffinity: True
+
 
 
 
