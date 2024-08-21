@@ -3,11 +3,14 @@ FROM registry.access.redhat.com/ubi8/python-311:1-36
 
 USER 0
 
-# Enable the copr repo to get oc
-RUN dnf -y install dnf-plugins-core && dnf -y copr enable yselkowitz/openshift
-
 # Install Python 3 and necessary tools
-RUN dnf -y install python3 python3-pip openshift-clients
+RUN dnf -y install python3 python3-pip  dnf-plugins-core curl
+
+# Install OpenShift CLI
+RUN curl -s -L "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz" -o /tmp/oc.tar.gz && \
+    tar zxvf /tmp/oc.tar.gz -C /tmp/ && \ 
+    mv /tmp/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/bin/ && \
+    rm -rf /tmp/oc.tar.gz /tmp/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/
 
 # Create a non-root user
 RUN useradd -m appuser
@@ -30,6 +33,9 @@ RUN chmod -R 777 /home/appuser /opt/app-root
 # Switch to non-root user
 USER appuser
 
+# Ensure /usr/bin is in the PATH
+ENV PATH="/usr/bin:${PATH}"
+
 # Copy the application source code
 COPY --chown=appuser:appuser . .
 
@@ -37,10 +43,10 @@ COPY --chown=appuser:appuser . .
 RUN pip install -r requirements.txt
 
 # Set the environment variables
-ENV FLASK_APP server.py
-ENV FLASK_RUN_HOST 0.0.0.0
-ENV FLASK_RUN_PORT 8000
-ENV KUBECONFIG=/home/appuser/.kube/config
+ENV FLASK_APP="server.py"
+ENV FLASK_RUN_HOST="0.0.0.0"
+ENV FLASK_RUN_PORT="8000"
+ENV KUBECONFIG="/home/appuser/.kube/config"
 
 # Expose the port the app runs on
 EXPOSE 8000
