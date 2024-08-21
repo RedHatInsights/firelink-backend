@@ -11,10 +11,9 @@ def worker(apps):
 
 class TestAppsListConcurrency:
     @pytest.fixture(scope="class")
-    def apps_instance(self):
-        return Apps()
 
-    def test_apps_list_concurrency(self, apps_instance):
+    def test_apps_list_concurrency(self):
+        apps_instance = Apps()
         num_processes = 10  # Number of concurrent processes
         pool = multiprocessing.Pool(processes=num_processes)
 
