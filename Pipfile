@@ -5,13 +5,15 @@ name = "pypi"
 
 [packages]
 flask = "==3.0.2"
-crc-bonfire = "==5.7.0"
+crc-bonfire = "==5.10.2"
 flask-cors = "==4.0.0"
 flask-socketio = "==5.3.6"
 gunicorn = "==21.2.0"
 pytest = "==8.0.0"
-kubernetes = "*"
-flask-caching = "*"
+kubernetes = "30.1.0"
+flask-caching = "2.3.0"
+multidict = "==6.0.5"
+gql = "==3.0.0a6"
 
 [dev-packages]
 
