@@ -4,9 +4,9 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 from firelink.Apps import Apps
-from firelink.Namespace import Namespace
 from firelink.FlaskAppHelpers import FlaskAppHelpers
-from firelink.Metrics import NamespaceResourceMetrics
+from firelink.Namespace import Namespace
+from firelink.Metrics import PrometheusNamespaceMetrics, PrometheusPodMetrics
 from firelink.Metrics import ClusterResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
@@ -60,17 +60,17 @@ def namespaces_list():
 def namespace_resource_metrics():
     namespaces = Namespace(lambda x:x).list()
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]
-    metrics = NamespaceResourceMetrics().get_resources_for_namespaces(namespaces)
+    metrics = PrometheusNamespaceMetrics().get_resources_for_namespaces(namespaces)
     return metrics
 
 # Get resources for a single namespace
 @app.route("/api/firelink/namespace/resource_metrics/<namespace>")
 def namespace_resource_metrics_single(namespace):
-    return NamespaceResourceMetrics().get_resources_for_namespace(namespace)
+    return PrometheusNamespaceMetrics().get_resources_for_namespace(namespace)
 
 @app.route("/api/firelink/namespace/top_pods", methods=["POST"])
 def namespace_top_pods():
-    return ClusterResourceMetrics().top_pods(request.json["namespace"])
+    return PrometheusPodMetrics().top_pods(request.json["namespace"])
 
 @app.route("/api/firelink/namespace/reserve", methods=["POST"])
 def namespace_reserve():
