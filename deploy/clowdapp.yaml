@@ -12,6 +12,9 @@ parameters:
 - name: ENV_NAME
   description: ClowdEnvironment name
   required: true
+- name: PROMETHEUS_URL
+  description: Prometheus URL
+  required: true
 
 objects:
 - apiVersion: cloud.redhat.com/v1alpha1
@@ -44,7 +47,7 @@ objects:
           requests:
             cpu: 1000m
             memory: 1Gi
-        env: 
+        env:
           - name: OC_SERVER
             valueFrom:
               secretKeyRef:
