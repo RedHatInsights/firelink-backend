@@ -28,6 +28,7 @@ A Dockerfile is provided to run firelink-backend in a UBI8 container with gunico
 ```bash
 $ export OC_TOKEN="sha256~DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
 $ export OC_SERVER="https://api.secretlab.company.com:6443"
+$ export PROMETHEUS_URL="https://metrics.company.com"
 $ docker build -t firelink-backend:latest .
 $ docker run --net=host -e OC_TOKEN -e OC_SERVER -p 8000:8000 firelink-backend:latest
 ```

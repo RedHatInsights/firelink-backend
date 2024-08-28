@@ -6,7 +6,7 @@ from flask import jsonify
 from firelink.Apps import Apps
 from firelink.FlaskAppHelpers import FlaskAppHelpers
 from firelink.Namespace import Namespace
-from firelink.Metrics import PrometheusNamespaceMetrics, PrometheusPodMetrics
+from firelink.Metrics import PrometheusNamespaceMetrics, PrometheusPodMetrics, PrometheusClusterMetrics
 from firelink.Metrics import ClusterResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
@@ -50,13 +50,28 @@ def cluster_top_pods():
 def cluster_top_nodes():
     return ClusterResourceMetrics().top_nodes()
 
+@app.route("/api/firelink/cluster/cpu_usage")
+def cluster_cpu_usage():
+    return PrometheusClusterMetrics().cluster_cpu_usage()
+
+@app.route("/api/firelink/cluster/memory_usage")
+def cluster_memory_usage():
+    return PrometheusClusterMetrics().cluster_memory_usage()
+
+@app.route("/api/firelink/cluster/node/capacity")
+def cluster_node_capacity():
+    return PrometheusClusterMetrics().cluster_node_capacity()
+
+@app.route("/api/firelink/cluster/node/allocatable")
+def cluster_node_allocatable():
+    return PrometheusClusterMetrics().cluster_node_allocatable()
+
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
     return Namespace(jsonify).list()
 
 # Get resources for all namespaces
 @app.route("/api/firelink/namespace/resource_metrics")
-@cache.cached(timeout=120)
 def namespace_resource_metrics():
     namespaces = Namespace(lambda x:x).list()
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]

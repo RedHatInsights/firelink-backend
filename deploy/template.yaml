@@ -3,6 +3,9 @@ kind: Template
 metadata:
   name: firelink-template
 parameters:
+  - name: PROMETHEUS_URL
+    description: Prometheus URL
+    required: true
   - name: OC_TOKEN
     description: OpenShift token
     required: true
@@ -41,6 +44,8 @@ objects:
                   value: "${OC_TOKEN}"
                 - name: OC_SERVER
                   value: "${OC_SERVER}"
+                - name: PROMETHEUS_URL
+                  value: "${PROMETHEUS_URL}"
 
   - apiVersion: v1
     kind: Service

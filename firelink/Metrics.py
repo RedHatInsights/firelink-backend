@@ -11,6 +11,22 @@ warnings.simplefilter('ignore', InsecureRequestWarning)
 # Disable all urllib3 warnings
 urllib3.disable_warnings(InsecureRequestWarning)
 
+class ClusterQueries:
+    def cluster_cpu_usage(self):
+        return 'cluster:node_cpu:ratio_rate5m{cluster=""}'
+    
+    def cluster_memory_usage(self):
+        return 'cluster:memory_usage:ratio{cluster=""}'
+    
+    def namespace_cpu_usage(self, namespace):
+        return f'sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{{cluster=""}}) by (namespace)'
+
+    def node_capacity(self):
+        return 'kube_node_status_capacity'
+    
+    def node_allocatable(self):
+        return 'kube_node_status_allocatable'
+
 class PodQueries:
     def pod_cpu_usage(self, namespace):
         return f'sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{{cluster="", namespace="{namespace}"}}) by (pod)'
@@ -37,9 +53,64 @@ class CPUQueries:
     def usage(self, namespaces):
         return f'sum(rate(container_cpu_usage_seconds_total{{namespace=~"{namespaces}",container!="POD"}}[5m])) by (namespace)'
 
+class PrometheusClusterMetrics:
+    def __init__(self):
+        prometheus_url = os.getenv("PROMETHEUS_URL")
+        bearer_token = os.getenv("OC_TOKEN")
+        self.prometheus_api = PrometheusConnect(
+            url=prometheus_url,
+            headers={"Authorization": f"Bearer {bearer_token}"},
+            disable_ssl=True
+        )
+    
+    def cluster_cpu_usage(self):
+        query = ClusterQueries().cluster_cpu_usage()
+        try:
+            results = self.prometheus_api.custom_query(query=query)
+            return self._format_result(results)
+        except Exception as e:
+            print(f"Error running query: {e}")
+            return None
+        
+    def cluster_memory_usage(self):
+        query = ClusterQueries().cluster_memory_usage()
+        try:
+            results = self.prometheus_api.custom_query(query=query)
+            return self._format_result(results)
+        except Exception as e:
+            print(f"Error running query: {e}")
+            return None
+    
+    def cluster_info(self):
+        capacity = self._cluster_node_capacity()
+        allocatable = self._cluster_node_allocatable()
+        
+    def _cluster_node_capacity(self):
+        query = ClusterQueries().node_capacity()
+        try:
+            results = self.prometheus_api.custom_query(query=query)
+            return results
+        except Exception as e:
+            print(f"Error running query: {e}")
+            return None
+        
+    def _cluster_node_allocatable(self):
+        query = ClusterQueries().node_allocatable()
+        try:
+            results = self.prometheus_api.custom_query(query=query)
+            return results
+        except Exception as e:
+            print(f"Error running query: {e}")
+            return None
+            
+        
+    def _format_result(self, result):
+        usage = float(result[0]["value"][1])
+        return {"value": usage}
+
 class PrometheusPodMetrics:
     def __init__(self):
-        prometheus_url = "https://prometheus.crcd01ue1.devshift.net"
+        prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
         self.prometheus_api = PrometheusConnect(
             url=prometheus_url,
@@ -87,7 +158,7 @@ class PrometheusPodMetrics:
 
 class PrometheusNamespaceMetrics:
     def __init__(self):
-        prometheus_url = "https://prometheus.crcd01ue1.devshift.net"
+        prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
         self.prometheus_api = PrometheusConnect(
             url=prometheus_url,
@@ -185,13 +256,6 @@ class PrometheusNamespaceMetrics:
                 # Convert bytes to GB
                 return raw_value / (1024**2)
         return 0.0
-
-# Example usage:
-if __name__ == "__main__":
-    namespaces = ["namespace1", "namespace2", "namespace3"]  # Add your namespaces here
-    prometheus_metrics = PrometheusNamespaceMetrics()
-    resources = prometheus_metrics.get_resources_for_namespaces(namespaces)
-    print(resources)
 
         
 
