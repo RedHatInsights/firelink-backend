@@ -82,8 +82,60 @@ class PrometheusClusterMetrics:
             return None
     
     def cluster_info(self):
-        capacity = self._cluster_node_capacity()
-        allocatable = self._cluster_node_allocatable()
+        results = []
+        results = self._process_node_metrics(self._cluster_node_capacity(), "capacity", results)
+        results = self._process_node_metrics(self._cluster_node_allocatable(), "allocatable", results)
+        results = self._add_usage_metrics(results)
+        return results
+    
+    def _add_usage_metrics(self, nodes):
+        for node in nodes:
+            for resource, resource_metrics in node.items():
+                if resource == "node":
+                    continue  # Skip the node name entry
+                    
+                capacity = None
+                allocatable = None
+
+                # Extract capacity and allocatable values
+                for metric in resource_metrics:
+                    if metric['type'] == 'capacity':
+                        capacity = float(metric['value'])
+                    elif metric['type'] == 'allocatable':
+                        allocatable = float(metric['value'])
+
+                if capacity is not None and allocatable is not None:
+                    # Calculate usage and usage_percent
+                    usage = capacity - allocatable
+                    usage_percent = (usage / capacity) * 100 if capacity > 0 else 0
+
+                    # Add the new metrics to the list
+                    resource_metrics.append({"type": "usage", "unit": "byte", "value": str(usage)})
+                    resource_metrics.append({"type": "usage_percent", "unit": "float", "value": str(usage_percent)})
+        
+        return nodes
+
+
+    def _add_metric_to_results(self, results, node_name, resource, metric_data):
+        for result in results:
+            if result["node"] == node_name:
+                if resource in result:
+                    result[resource].append(metric_data)
+                else:
+                    result[resource] = [metric_data]
+                return
+        results.append({"node": node_name, resource: [metric_data]})
+
+    def _process_node_metrics(self, prom_results, type, results=[]):
+        for prom_result in prom_results:
+            metric = prom_result["metric"]
+            value = prom_result["value"][1]
+            node_name = metric["node"]
+            metric_data = {"type": type, "value": value, "unit": metric["unit"]}
+            self._add_metric_to_results(results, node_name, metric["resource"], metric_data)
+        return results
+
+             
         
     def _cluster_node_capacity(self):
         query = ClusterQueries().node_capacity()
@@ -155,7 +207,6 @@ class PrometheusPodMetrics:
             print(f"Error running query: {e}")
             return None
             
-
 class PrometheusNamespaceMetrics:
     def __init__(self):
         prometheus_url = os.getenv("PROMETHEUS_URL")
@@ -257,132 +308,15 @@ class PrometheusNamespaceMetrics:
                 return raw_value / (1024**2)
         return 0.0
 
-        
-
-class NamespaceResourceMetrics:
-
-    def __init__(self):
-        config.load_kube_config()
-        self.v1 = client.CoreV1Api()
-        self.metrics_api = client.CustomObjectsApi()
-
-    def _parse_resource_value(self, value, resource_type):
-        if value.endswith('m'):
-            return float(value[:-1]) / 1000  # Convert millicores to cores
-        elif value.endswith('Ki'):
-            if resource_type == 'cpu':
-                raise ValueError(f"Unsupported CPU value format: {value}")
-            elif resource_type == 'memory':
-                return float(value[:-2]) / 1024  # Convert KiB to MiB
-        elif value.endswith('Mi'):
-            if resource_type == 'cpu':
-                raise ValueError(f"Unsupported CPU value format: {value}")
-            elif resource_type == 'memory':
-                return float(value[:-2])  # Assume MiB for memory
-        elif value.endswith('Gi'):
-            if resource_type == 'cpu':
-                raise ValueError(f"Unsupported CPU value format: {value}")
-            elif resource_type == 'memory':
-                return float(value[:-2]) * 1024  # Convert GiB to MiB
-        else:
-            try:
-                float_value = float(value)
-                if resource_type == 'cpu':
-                    return float_value  # Assume cores for CPU
-                elif resource_type == 'memory':
-                    return float_value / (1024 * 1024)  # Assume bytes and convert to MiB for memory
-            except ValueError:
-                raise ValueError(f"Unsupported resource value: {value}")
-
-    def _aggregate_pod_resources(self, pods):
-        resources = {'requests': {'cpu': 0, 'memory': 0}, 'limits': {'cpu': 0, 'memory': 0}}
-
-        for pod in pods:
-            for container in pod.spec.containers:
-                if container.resources is not None:
-                    for resource_type in ['requests', 'limits']:
-                        if resource_type in container.resources.to_dict():
-                            values = container.resources.to_dict()[resource_type]
-                            for key, value in values.items():
-                                if key in ['cpu', 'memory']:
-                                    resources[resource_type][key] += self._parse_resource_value(value, key)
-
-
-    def _aggregate_usage(self, namespace):
-        usage = {'cpu': 0, 'memory': 0}
-
-        try:
-            metrics = self.metrics_api.list_namespaced_custom_object(
-                group="metrics.k8s.io",
-                version="v1beta1",
-                namespace=namespace,
-                plural="pods"
-            )
-
-            for pod_metrics in metrics['items']:
-                for container_metrics in pod_metrics['containers']:
-                    cpu_usage = container_metrics['usage']['cpu']
-                    mem_usage = container_metrics['usage']['memory']
-                    usage['cpu'] += self._parse_resource_value(cpu_usage, 'cpu')
-                    usage['memory'] += self._parse_resource_value(mem_usage, 'memory')
-
-        except client.rest.ApiException as e:
-            print(f"Error retrieving pod usage metrics for namespace {namespace}: {e}")
-
-        return usage
-
-    def get_resources_for_namespace(self, namespace):
-        namespace_resources = {'limits': {'cpu': 0, 'memory': 0}, 'requests': {'cpu': 0, 'memory': 0}}
-
-        try:
-            pods = self.v1.list_namespaced_pod(namespace)
-            for pod in pods.items:
-                for container in pod.spec.containers:
-                    if container.resources is not None:
-                        for resource_type in ['requests', 'limits']:
-                            if resource_type in container.resources.to_dict():
-                                values = container.resources.to_dict()[resource_type]
-                                for key, value in values.items():
-                                    if key in ['cpu', 'memory']:
-                                        namespace_resources[resource_type][key] += self._parse_resource_value(value, key)
-        except Exception as e:
-            print(f"Error retrieving pod resources for namespace {namespace}: {e}")
-
-        try:
-            namespace_resources['usage'] = self._aggregate_usage(namespace)
-        except Exception as e:
-            print(f"Error retrieving pod usage for namespace {namespace}: {e}")
-            namespace_resources['usage'] = {'cpu': 0, 'memory': 0}  # Set default usage values
-
-        # Round the values to 2 decimal places
-        for resource_type in namespace_resources:
-            for key in namespace_resources[resource_type]:
-                namespace_resources[resource_type][key] = round(namespace_resources[resource_type][key], 2)
-
-        return namespace_resources
-        
-    def get_resources_for_namespaces(self, namespaces):
-        all_resources = {}
-        for namespace in namespaces:
-            all_resources[namespace] = self.get_resources_for_namespace(namespace)
-        return all_resources
-
 class ClusterResourceMetrics:
     def __init__(self):
         config.load_kube_config()
+        self.api = client.CoreV1Api()
         self.custom_api = client.CustomObjectsApi()
-
-    def all_top_pods(self):
-        metrics = self.custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="pods")
-        return self._parse_pod_metrics(metrics)
 
     def top_pods(self, namespace):
         metrics = self.custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
         return self._parse_pod_metrics(metrics)
-
-    def top_nodes(self):
-        metrics = self.custom_api.list_cluster_custom_object(group="metrics.k8s.io", version="v1beta1", plural="nodes")
-        return self._parse_node_metrics(metrics)
 
     def _parse_pod_metrics(self, metrics):
         return [

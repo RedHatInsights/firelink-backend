@@ -5,6 +5,36 @@ from firelink.AdaptorClassHelpers import AdaptorClassHelpers
 import json
 import kubernetes
 
+class Node:
+    def __init__(self, jsonify=json.dumps):
+        kubernetes.config.load_kube_config()
+        self.k8s_client = kubernetes.client.CoreV1Api()
+        self.jsonify = jsonify
+        
+    def get_nodes(self):
+        nodes = self.k8s_client.list_node()
+        processed_nodes = self._process_nodes(nodes)
+        return processed_nodes
+    
+    def _process_nodes(self, nodes):
+        response = []
+        for node in nodes:
+            response_obj = {
+                "name": node.metadata.name,
+                "cpu_capacity": node.status.capacity["cpu"],
+                "cpu_allocatable": node.status.allocatable["cpu"],
+                "memory_capacity": node.status.capacity["memory"],
+                "memory_allocatable": node.status.allocatable["memory"],
+                "status": node.status.conditions[-1].type,
+                "roles": node.metadata.labels["kubernetes.io/role"],
+                "pods": node.status.capacity["pods"],
+                "filesystem_capacity": node.status.capacity["ephemeral-storage"],
+                "filesystem_allocatable": node.status.allocatable["ephemeral-storage"],
+                "instance_type": node.metadata.labels["beta.kubernetes.io/instance-type"],
+            }
+            response.append(response_obj)
+        return response
+
 class Cluster:
     def __init__(self, jsonify=json.dumps):
         kubernetes.config.load_kube_config()

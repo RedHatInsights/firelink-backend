@@ -1,5 +1,4 @@
 import logging
-from urllib import request
 from flask import Flask
 from flask import request
 from flask import jsonify
@@ -42,13 +41,9 @@ app.before_request_funcs = [(None, helpers.login_to_openshift(), helpers.create_
 def health():
     return ("", 200) if FlaskAppHelpers().health() else ("", 500)
 
-@app.route("/api/firelink/cluster/top_pods")
-def cluster_top_pods():
-    return ClusterResourceMetrics().all_top_pods()
-
 @app.route("/api/firelink/cluster/top_nodes")
 def cluster_top_nodes():
-    return ClusterResourceMetrics().top_nodes()
+    return PrometheusClusterMetrics().cluster_info()
 
 @app.route("/api/firelink/cluster/cpu_usage")
 def cluster_cpu_usage():
@@ -57,14 +52,6 @@ def cluster_cpu_usage():
 @app.route("/api/firelink/cluster/memory_usage")
 def cluster_memory_usage():
     return PrometheusClusterMetrics().cluster_memory_usage()
-
-@app.route("/api/firelink/cluster/node/capacity")
-def cluster_node_capacity():
-    return PrometheusClusterMetrics().cluster_node_capacity()
-
-@app.route("/api/firelink/cluster/node/allocatable")
-def cluster_node_allocatable():
-    return PrometheusClusterMetrics().cluster_node_allocatable()
 
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
