@@ -1,12 +1,11 @@
 import logging
-from urllib import request
 from flask import Flask
 from flask import request
 from flask import jsonify
 from firelink.Apps import Apps
-from firelink.Namespace import Namespace
 from firelink.FlaskAppHelpers import FlaskAppHelpers
-from firelink.Metrics import NamespaceResourceMetrics
+from firelink.Namespace import Namespace
+from firelink.Metrics import PrometheusNamespaceMetrics, PrometheusPodMetrics, PrometheusClusterMetrics
 from firelink.Metrics import ClusterResourceMetrics
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
@@ -42,13 +41,17 @@ app.before_request_funcs = [(None, helpers.login_to_openshift(), helpers.create_
 def health():
     return ("", 200) if FlaskAppHelpers().health() else ("", 500)
 
-@app.route("/api/firelink/cluster/top_pods")
-def cluster_top_pods():
-    return ClusterResourceMetrics().all_top_pods()
-
 @app.route("/api/firelink/cluster/top_nodes")
 def cluster_top_nodes():
-    return ClusterResourceMetrics().top_nodes()
+    return PrometheusClusterMetrics().cluster_info()
+
+@app.route("/api/firelink/cluster/cpu_usage")
+def cluster_cpu_usage():
+    return PrometheusClusterMetrics().cluster_cpu_usage()
+
+@app.route("/api/firelink/cluster/memory_usage")
+def cluster_memory_usage():
+    return PrometheusClusterMetrics().cluster_memory_usage()
 
 @app.route("/api/firelink/namespace/list")
 def namespaces_list():
@@ -56,21 +59,20 @@ def namespaces_list():
 
 # Get resources for all namespaces
 @app.route("/api/firelink/namespace/resource_metrics")
-@cache.cached(timeout=120)
 def namespace_resource_metrics():
     namespaces = Namespace(lambda x:x).list()
     namespaces = [namespace["namespace"] for namespace in namespaces if namespace["reserved"]]
-    metrics = NamespaceResourceMetrics().get_resources_for_namespaces(namespaces)
+    metrics = PrometheusNamespaceMetrics().get_resources_for_namespaces(namespaces)
     return metrics
 
 # Get resources for a single namespace
 @app.route("/api/firelink/namespace/resource_metrics/<namespace>")
 def namespace_resource_metrics_single(namespace):
-    return NamespaceResourceMetrics().get_resources_for_namespace(namespace)
+    return PrometheusNamespaceMetrics().get_resources_for_namespace(namespace)
 
 @app.route("/api/firelink/namespace/top_pods", methods=["POST"])
 def namespace_top_pods():
-    return ClusterResourceMetrics().top_pods(request.json["namespace"])
+    return PrometheusPodMetrics().top_pods(request.json["namespace"])
 
 @app.route("/api/firelink/namespace/reserve", methods=["POST"])
 def namespace_reserve():
