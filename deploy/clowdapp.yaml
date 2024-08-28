@@ -48,6 +48,8 @@ objects:
             cpu: 1000m
             memory: 1Gi
         env:
+          - name: PROMETHEUS_URL
+            value: ${PROMETHEUS_URL}
           - name: OC_SERVER
             valueFrom:
               secretKeyRef:
