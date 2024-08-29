@@ -46,7 +46,8 @@ class Cluster:
         # Filter namespaces that start with "ephemeral-"
         prefix = "ephemeral-"
         namespaces = [ns for ns in all_namespaces.items 
-            if ns.metadata.name.startswith(prefix) 
+            if ns.metadata.name.startswith(prefix)
+            and bool(ns.metadata.labels.get("operator-ns", False))
             and ns.status.phase == "Active"
             and ns.metadata.name != "ephemeral-base"
             and ns.metadata.name != "ephemeral-namespace-operator-system"
