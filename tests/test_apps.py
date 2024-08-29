@@ -1,18 +1,20 @@
 import sys
 sys.path.append('.')
-from firelink.apps import Apps
-from firelink.openshift_resources import Namespace
-import json
 import multiprocessing
 import pytest
+from firelink.apps import Apps
+from firelink.openshift_resources import Namespace
 
 def worker(apps):
+    """Worker function to list apps"""
     return apps.list()
 
 class TestAppsListConcurrency:
+    """Test to ensure that apps listing is thread-safe"""
     @pytest.fixture(scope="class")
 
     def test_apps_list_concurrency(self):
+        """Test to ensure that apps listing is thread-safe"""
         apps_instance = Apps()
         num_processes = 10  # Number of concurrent processes
         pool = multiprocessing.Pool(processes=num_processes)
@@ -31,10 +33,12 @@ class TestAppsListConcurrency:
         pool.join()
 
 def test_apps_list():
+    """Test to ensure that apps listing works"""
     apps = Apps().list()
     assert len(apps) > 0
 
 def test_apps_deploy():
+    """Test to ensure that apps deployment works"""
     emit_response = {}
     namespace = None
     def dummy_emit(_, data):
@@ -77,10 +81,6 @@ def test_apps_deploy():
         'secrets_dir': '', 
         'local': True
     })
-    assert emit_response['completed'] == True
+    assert emit_response['completed'] is True
     if namespace:
         Namespace().release({'namespace': namespace})
-
-
-
-
