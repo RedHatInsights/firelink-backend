@@ -1,21 +1,23 @@
+"""This module contains classes to interact with OpenShift resources"""
 import time
-from bonfire import bonfire
-from bonfire.utils import AppOrComponentSelector
-from firelink.AdaptorClassHelpers import AdaptorClassHelpers
 import json
+from bonfire import bonfire
 import kubernetes
+from firelink.adaptor_class_helpers import AdaptorClassHelpers
 
 class Node:
+    """Class to get nodes in the cluster"""
     def __init__(self, jsonify=json.dumps):
         kubernetes.config.load_kube_config()
         self.k8s_client = kubernetes.client.CoreV1Api()
         self.jsonify = jsonify
-        
+
     def get_nodes(self):
+        """Get nodes in the cluster"""
         nodes = self.k8s_client.list_node()
         processed_nodes = self._process_nodes(nodes)
         return processed_nodes
-    
+
     def _process_nodes(self, nodes):
         response = []
         for node in nodes:
@@ -35,13 +37,15 @@ class Node:
             response.append(response_obj)
         return response
 
-class Cluster:
-    def __init__(self, jsonify=json.dumps):
+class EphemeralResources:
+    """Class to get resources related to ephemeral such as namespaces and reservations"""
+    def __init__(self):
         kubernetes.config.load_kube_config()
         self.k8s_client = kubernetes.client.CoreV1Api()
-        self.crd_client = kubernetes.client.CustomObjectsApi()    
-        
+        self.crd_client = kubernetes.client.CustomObjectsApi()
+
     def get_ephemeral_namespaces(self):
+        """Get ephemeral namespaces"""
         all_namespaces = self.k8s_client.list_namespace()
         # Filter namespaces that start with "ephemeral-"
         prefix = "ephemeral-"
@@ -55,6 +59,7 @@ class Cluster:
         return namespaces
 
     def get_reservations(self):
+        """Get namespace reservations"""
         reservations = self.crd_client.list_cluster_custom_object(
             group="cloud.redhat.com",
             version="v1alpha1",
@@ -63,6 +68,7 @@ class Cluster:
         return reservations["items"]
 
 class Namespace:
+    """Class to manage namespaces"""
     DEFAULT_POOL_TYPE = "default"
     DEFAULT_DURATION = "1h"
     DEFAULT_TIMEOUT = 600
@@ -70,19 +76,27 @@ class Namespace:
     DEFAULT_RELEASE_TRIES = 30
     DEFAULT_RELEASE_WAIT_SECONDS = 1
 
-    def __init__(self, jsonify=json.dumps):
+    def __init__(self, jsonify=None):
+        # This looks a little weird but it is for dependency injection 
+        # During tests we want to inject a json dumper to make testing easier
+        # but we don't need this feature in production
+        # so we default to a lambda that just returns the input
+        # this way we can call jsonify() and it will just return the input
+        self.jsonify = lambda x:x
+        if jsonify is None:
+            jsonify = json.dumps      
         self.helpers = AdaptorClassHelpers()
         self.jsonify = jsonify
 
-
     def list(self):
+        """List ephemeral namespaces"""
         self.helpers.route_guard()
 
-        cluster = Cluster()
+        cluster = EphemeralResources()
         namespaces = cluster.get_ephemeral_namespaces()
         reservations = cluster.get_reservations()
-        response = [] 
-        
+        response = []
+
         for namespace in namespaces:
             response_obj = {
                 "namespace": namespace.metadata.name,
@@ -101,12 +115,13 @@ class Namespace:
                     response_obj["expires_in"] = reservation["status"]["expiration"]
                     response_obj["pool_type"] = reservation["spec"]["pool"]
                     #response_obj["clowdapps"] = reservation["spec"]["clowdapps"]
-            
+
             response.append(response_obj)
-            
+
         return self.jsonify(response)
 
     def reserve(self, opts):
+        """Reserve a namespace"""
         self.helpers.route_guard()
 
         requester = opts.get("requester", bonfire._get_requester())
@@ -118,9 +133,13 @@ class Namespace:
         force = opts.get("force", False)
 
         if bonfire.check_for_existing_reservation(requester) and not force:
-            response = {"namespace": "", "completed": False, "message": "You already have a reservation."}
+            response = {
+                "namespace": "",
+                "completed": False,
+                "message": "You already have a reservation."
+            }
             return self.jsonify(response)
-        
+
         try:
             ns = bonfire.reserve_namespace(res_name, requester, duration, pool_type, timeout, local)
             response = {"namespace": ns.name, "completed": True, "message": "Namespace reserved"}
@@ -129,17 +148,18 @@ class Namespace:
         
         return self.jsonify(response)
 
-    def _try_relase_loop(self, namespace):
+    def _try_release_loop(self, namespace):
         for _ in range(self.DEFAULT_RELEASE_TRIES):
             time.sleep(self.DEFAULT_RELEASE_WAIT_SECONDS)
             released_namespace = bonfire.get_reservation(None, namespace, None)
             response = {"completed": False, "message": "Something went wrong verifying the release"}
-            if released_namespace  == None:
+            if released_namespace is None:
                 response = {"completed": True, "message": "Namespace released"}
                 break
         return response
 
     def release(self, opts):
+        """Release a namespace"""
         self.helpers.route_guard()
 
         namespace = opts.get("namespace")
@@ -149,17 +169,21 @@ class Namespace:
 
         try:
             bonfire.release_reservation(None, namespace, opts.get("local", self.DEFAULT_LOCAL))
-            response = self._try_relase_loop(namespace)
+            response = self._try_release_loop(namespace)
         except Exception as e:
             response = {"completed": False, "message": str(e)}
 
         return self.jsonify(response)
 
     def describe(self, namespace):
+        """Describe a namespace"""
         self.helpers.route_guard()
         try:
             descriptionText = bonfire.describe_namespace(namespace, "string")
-            response = {"completed": True, "message": self. _parse_description_to_json(descriptionText)}
+            response = {
+                "completed": True,
+                "message": self. _parse_description_to_json(descriptionText)
+            }
         except Exception as e:
             response = {"completed": False, "message": "ERROR: " + str(e)}
         return self.jsonify(response)
@@ -199,4 +223,3 @@ class Namespace:
             result['gateway'] = gateway
 
         return result
-

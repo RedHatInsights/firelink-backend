@@ -6,6 +6,7 @@ You should set your oc token and server via the `OC_TOKEN` and `OC_SERVER` envir
 ```bash
 $ export OC_TOKEN="sha256~DEADBEEFDEADBEEFDEADBEEFDEADBEEF"
 $ export OC_SERVER="https://api.secretlab.company.com:6443"
+$ export PROMETHEUS_URL="https://metrics.company.com"
 ```
 If you don't set these firelink-backend will assume you are already logged in with a local kubecontext and wont attempt a login to the OpenShift API.
 

@@ -1,8 +1,7 @@
-import re
-from kubernetes import client, config
-from prometheus_api_client import PrometheusConnect
+"""Module to handle Prometheus queries for cluster, pod, and namespace metrics."""
 import os
 import warnings
+from prometheus_api_client import PrometheusConnect
 from urllib3.exceptions import InsecureRequestWarning
 import urllib3
 
@@ -12,28 +11,39 @@ warnings.simplefilter('ignore', InsecureRequestWarning)
 urllib3.disable_warnings(InsecureRequestWarning)
 
 class ClusterQueries:
+    """Class to hold Prometheus queries for cluster metrics."""
     def cluster_cpu_usage(self):
+        """Query to get the cluster CPU usage."""
         return 'cluster:node_cpu:ratio_rate5m{cluster=""}'
-    
+
     def cluster_memory_usage(self):
+        """Query to get the cluster memory usage."""
         return 'cluster:memory_usage:ratio{cluster=""}'
-    
-    def namespace_cpu_usage(self, namespace):
-        return f'sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{{cluster=""}}) by (namespace)'
+
+    def namespace_cpu_usage(self):
+        """Query to get the namespace CPU usage."""
+        return "sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{cluster=""}) by (namespace)"
 
     def node_capacity(self):
+        """Query to get the node capacity."""
         return 'kube_node_status_capacity'
-    
+
     def node_allocatable(self):
+        """Query to get the node allocatable."""
         return 'kube_node_status_allocatable'
 
 class PodQueries:
+    """Class to hold Prometheus queries for pod metrics."""
     def pod_cpu_usage(self, namespace):
+        """Query to get the pod CPU usage."""
         return f'sum(node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{{cluster="", namespace="{namespace}"}}) by (pod)'
+
     def pod_memory_usage(self, namespace):
+        """Query to get the pod memory usage."""
         return f'sum(container_memory_working_set_bytes{{namespace="{namespace}"}}) by (pod)'
 
 class MemoryQueries:
+    """Class to hold Prometheus queries for memory metrics."""
     def limits(self, namespaces):
         return f'sum by (namespace) (kube_pod_resource_limit{{resource="memory", namespace=~"{namespaces}"}})'
 
@@ -44,6 +54,7 @@ class MemoryQueries:
         return f'sum(container_memory_working_set_bytes{{namespace=~"{namespaces}",container="",pod!=""}}) BY (namespace)'
 
 class CPUQueries:
+    """Class to hold Prometheus queries for CPU metrics."""
     def limits(self, namespaces):
         return f'sum by (namespace) (kube_pod_resource_limit{{resource="cpu", namespace=~"{namespaces}"}})'
 
@@ -54,6 +65,7 @@ class CPUQueries:
         return f'sum(rate(container_cpu_usage_seconds_total{{namespace=~"{namespaces}",container!="POD"}}[5m])) by (namespace)'
 
 class PrometheusClusterMetrics:
+    """Class to handle Prometheus queries for cluster metrics."""
     def __init__(self):
         prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
@@ -62,8 +74,9 @@ class PrometheusClusterMetrics:
             headers={"Authorization": f"Bearer {bearer_token}"},
             disable_ssl=True
         )
-    
+
     def cluster_cpu_usage(self):
+        """Get the cluster CPU usage."""
         query = ClusterQueries().cluster_cpu_usage()
         try:
             results = self.prometheus_api.custom_query(query=query)
@@ -71,8 +84,9 @@ class PrometheusClusterMetrics:
         except Exception as e:
             print(f"Error running query: {e}")
             return None
-        
+ 
     def cluster_memory_usage(self):
+        """Get the cluster memory usage."""
         query = ClusterQueries().cluster_memory_usage()
         try:
             results = self.prometheus_api.custom_query(query=query)
@@ -80,14 +94,15 @@ class PrometheusClusterMetrics:
         except Exception as e:
             print(f"Error running query: {e}")
             return None
-    
+
     def cluster_info(self):
+        """Get the cluster info."""
         results = []
         results = self._process_node_metrics(self._cluster_node_capacity(), "capacity", results)
         results = self._process_node_metrics(self._cluster_node_allocatable(), "allocatable", results)
         results = self._add_usage_metrics(results)
         return results
-    
+
     def _add_usage_metrics(self, nodes):
         for node in nodes:
             for resource, resource_metrics in node.items():
@@ -115,7 +130,6 @@ class PrometheusClusterMetrics:
         
         return nodes
 
-
     def _add_metric_to_results(self, results, node_name, resource, metric_data):
         for result in results:
             if result["node"] == node_name:
@@ -126,17 +140,17 @@ class PrometheusClusterMetrics:
                 return
         results.append({"node": node_name, resource: [metric_data]})
 
-    def _process_node_metrics(self, prom_results, type, results=[]):
+    def _process_node_metrics(self, prom_results, metric_type, results=None):
+        if results is None:
+            results = []
         for prom_result in prom_results:
             metric = prom_result["metric"]
             value = prom_result["value"][1]
             node_name = metric["node"]
-            metric_data = {"type": type, "value": value, "unit": metric["unit"]}
+            metric_data = {"type": metric_type, "value": value, "unit": metric["unit"]}
             self._add_metric_to_results(results, node_name, metric["resource"], metric_data)
         return results
 
-             
-        
     def _cluster_node_capacity(self):
         query = ClusterQueries().node_capacity()
         try:
@@ -145,7 +159,7 @@ class PrometheusClusterMetrics:
         except Exception as e:
             print(f"Error running query: {e}")
             return None
-        
+    
     def _cluster_node_allocatable(self):
         query = ClusterQueries().node_allocatable()
         try:
@@ -154,13 +168,14 @@ class PrometheusClusterMetrics:
         except Exception as e:
             print(f"Error running query: {e}")
             return None
-            
-        
+
     def _format_result(self, result):
         usage = float(result[0]["value"][1])
         return {"value": usage}
 
 class PrometheusPodMetrics:
+    """Class to handle Prometheus queries for pod metrics."""
+    
     def __init__(self):
         prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
@@ -169,8 +184,9 @@ class PrometheusPodMetrics:
             headers={"Authorization": f"Bearer {bearer_token}"},
             disable_ssl=True
         )
-    
+
     def top_pods(self, namespace):
+        """Get the top pods for a namespace by CPU and memory usage."""
         cpu_results = self._top_pods_cpu(namespace)
         memory_results = self._top_pods_memory(namespace)
         if cpu_results is None or memory_results is None:
@@ -187,8 +203,7 @@ class PrometheusPodMetrics:
                     break
             results.append(result)
         return results
-        
-    
+
     def _top_pods_cpu(self, namespace):
         query = PodQueries().pod_cpu_usage(namespace)
         try:
@@ -208,6 +223,8 @@ class PrometheusPodMetrics:
             return None
             
 class PrometheusNamespaceMetrics:
+    """Class to handle Prometheus queries for namespace metrics."""
+
     def __init__(self):
         prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
@@ -227,11 +244,11 @@ class PrometheusNamespaceMetrics:
             return None
 
     def get_resources_for_namespace(self, namespace):
+        """Get resources for a single namespace."""
         # Generate batched queries
         cpu_limits = self._run_query(CPUQueries().limits(namespace))
         cpu_requests = self._run_query(CPUQueries().requests(namespace))
-        cpu_usage = self._run_query(CPUQueries().usage(namespace))
-        
+        cpu_usage = self._run_query(CPUQueries().usage(namespace)) 
         memory_limits = self._run_query(MemoryQueries().limits(namespace))
         memory_requests = self._run_query(MemoryQueries().requests(namespace))
         memory_usage = self._run_query(MemoryQueries().usage(namespace))
@@ -255,6 +272,7 @@ class PrometheusNamespaceMetrics:
         return resources
 
     def get_resources_for_namespaces(self, namespaces):
+        """Get resources for a list of namespaces."""
         # Create a regex pattern to match all the namespaces
         namespace_pattern = "|".join(namespaces)
 
@@ -262,7 +280,6 @@ class PrometheusNamespaceMetrics:
         cpu_limits = self._run_query(CPUQueries().limits(namespace_pattern))
         cpu_requests = self._run_query(CPUQueries().requests(namespace_pattern))
         cpu_usage = self._run_query(CPUQueries().usage(namespace_pattern))
-        
         memory_limits = self._run_query(MemoryQueries().limits(namespace_pattern))
         memory_requests = self._run_query(MemoryQueries().requests(namespace_pattern))
         memory_usage = self._run_query(MemoryQueries().usage(namespace_pattern))
@@ -307,67 +324,3 @@ class PrometheusNamespaceMetrics:
                 # Convert bytes to GB
                 return raw_value / (1024**2)
         return 0.0
-
-class ClusterResourceMetrics:
-    def __init__(self):
-        config.load_kube_config()
-        self.api = client.CoreV1Api()
-        self.custom_api = client.CustomObjectsApi()
-
-    def top_pods(self, namespace):
-        metrics = self.custom_api.list_namespaced_custom_object(group="metrics.k8s.io", version="v1beta1", namespace=namespace, plural="pods")
-        return self._parse_pod_metrics(metrics)
-
-    def _parse_pod_metrics(self, metrics):
-        return [
-            {"NAME": f"{item['metadata']['namespace']}/{item['metadata']['name']}",
-             "CPU(cores)": item["containers"][0]["usage"]["cpu"],
-             "MEMORY(bytes)": self._convert_to_gi(item["containers"][0]["usage"]["memory"])}
-            for item in metrics["items"]
-        ]
-
-    def _parse_node_metrics(self, metrics):
-        v1_api = client.CoreV1Api()
-        parsed_metrics = []
-        for item in metrics["items"]:
-            node_name = item["metadata"]["name"]
-            try:
-                node_info = v1_api.read_node(node_name)
-                parsed_metrics.append({
-                    "NAME": node_name,
-                    "CPU(cores)": item["usage"]["cpu"],
-                    "CPU%": self._calculate_percentage(item["usage"]["cpu"], node_info.status.allocatable["cpu"]),
-                    "MEMORY(bytes)": self._convert_to_gi(item["usage"]["memory"]),
-                    "MEMORY%": self._calculate_percentage(item["usage"]["memory"], node_info.status.allocatable["memory"])
-                })
-            except client.rest.ApiException as e:
-                print(f"API error for node {node_name}: {e}")
-            except ValueError as e:
-                print(f"Value error processing metrics for node {node_name}: {e}")
-        return parsed_metrics
-
-    def _convert_to_gi(self, value):
-        if value == '0':
-            return '0Gi'
-        units = {"Ki": 1/1024/1024, "Mi": 1/1024, "Gi": 1}
-        match = re.match(r"(\d+)(Ki|Mi|Gi)", value)
-        if match:
-            return f"{int(match.group(1)) * units[match.group(2)]:.2f}Gi"
-        raise ValueError(f"Unsupported memory unit in '{value}'")
-
-
-    def _calculate_percentage(self, usage, allocatable):
-        usage_value = self._convert_to_base_unit(usage)
-        allocatable_value = self._convert_to_base_unit(allocatable)
-        if allocatable_value == 0:
-            return "0%"
-        return f"{(usage_value / allocatable_value) * 100:.2f}%"
-
-    def _convert_to_base_unit(self, value):
-        units = {"Ki": 1, "Mi": 1024, "Gi": 1024*1024}
-        match = re.match(r"(\d+)(Ki|Mi|Gi|m)?", value)
-        if match:
-            unit = match.group(2) or "Ki"  # Assume "Ki" if no unit is present, "m" is treated as "Ki"
-            return int(match.group(1)) * units.get(unit, 1)
-        raise ValueError(f"Invalid resource value '{value}'")
-

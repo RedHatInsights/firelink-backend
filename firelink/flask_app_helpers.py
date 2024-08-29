@@ -1,10 +1,12 @@
-import subprocess
+"""Helper functions for the Flask app."""
 import os
+import subprocess
 from bonfire import qontract
 
 class FlaskAppHelpers:
-    # We verify health by ensuring we can talk to openshift
+    """Helper functions for the Flask app."""
     def health(self):
+        """We check health by ensuring we can talk to the OpenShift API."""
         try:
             subprocess.run(
                 ["oc", "whoami"],
@@ -14,10 +16,11 @@ class FlaskAppHelpers:
                 text=True
             )
             return True
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError as _e:
             return False
 
     def login_to_openshift(self):
+        """Login to OpenShift using the OC_TOKEN and OC_SERVER env vars."""
         oc_token = os.environ.get('OC_TOKEN')
         oc_server = os.environ.get('OC_SERVER')
         if oc_token and oc_server:
@@ -36,6 +39,7 @@ class FlaskAppHelpers:
             print("OC_TOKEN and OC_SERVER env vars not found. Assuming local kubecontext.")
 
     def create_gql_client(self):
+        """Create a global GraphQL client."""
         global _client 
         try:
             _client = qontract.get_client()
