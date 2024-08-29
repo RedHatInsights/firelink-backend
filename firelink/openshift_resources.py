@@ -82,11 +82,11 @@ class Namespace:
         # but we don't need this feature in production
         # so we default to a lambda that just returns the input
         # this way we can call jsonify() and it will just return the input
-        self.jsonify = lambda x:x
         if jsonify is None:
-            jsonify = json.dumps      
+            self.jsonify = lambda x:x
+        else:
+            self.jsonify = jsonify
         self.helpers = AdaptorClassHelpers()
-        self.jsonify = jsonify
 
     def list(self):
         """List ephemeral namespaces"""

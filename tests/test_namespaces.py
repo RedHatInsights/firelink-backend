@@ -7,12 +7,11 @@ from firelink.openshift_resources import Namespace
 
 def _reserve_namespace():
     ns_controller = Namespace()
-    response = json.loads(ns_controller.reserve({
+    return ns_controller.reserve({
         "force": False, 
         "pool": "default", 
         "duration": "10m", 
-        "requester": "firelink-backend-tests"}))
-    return response
+        "requester": "firelink-backend-tests"})
 
 # Depending on external factors this test can occasionally fail
 # If the CRCD cluster doesn't have enough namespaces available or
@@ -68,20 +67,20 @@ def test_namespace_release():
     """Test to ensure that namespace release works"""
     ns_controller = Namespace()
     namespace = _reserve_namespace()
-    response = json.loads(ns_controller.release({"namespace": namespace["namespace"]}))
+    response = ns_controller.release({"namespace": namespace["namespace"]})
     assert response["completed"] is True
 
 def test_namespace_release_no_name_specified():
     """Test to ensure that namespace release fails when no namespace is specified"""
     ns_controller = Namespace()
-    response = json.loads(ns_controller.release({}))
+    response = ns_controller.release({})
     assert response["completed"] is False
 
 def test_namespace_describe():
     """Test to ensure that namespace description works"""
     ns_controller = Namespace()
-    namespace = _reserve_namespace() 
-    response = json.loads(ns_controller.describe(namespace["namespace"]))
+    namespace = _reserve_namespace()
+    response = ns_controller.describe(namespace["namespace"])
     assert response["completed"] is True
     ns_controller.release({"namespace": namespace["namespace"]})
 
@@ -89,10 +88,10 @@ def test_namespace_reserve_already_exists():
     """Test to ensure that namespace reservation fails when a reservation already exists"""
     ns_controller = Namespace()
     namespace = _reserve_namespace() 
-    response = json.loads(ns_controller.reserve({
+    response = ns_controller.reserve({
         "force": False, 
         "pool": "default", 
         "duration": "10m", 
-        "requester": "firelink-backend-tests"}))    
+        "requester": "firelink-backend-tests"}) 
     assert response["completed"] is False
     ns_controller.release({"namespace": namespace["namespace"]})
