@@ -17,10 +17,10 @@ class Apps:
         self.elastic_logger = ElasticLogger()
         self.helpers = AdaptorClassHelpers()
         self.jsonify = jsonify
-        if emit:
-            self.emit = emit
-        else:
+        if emit is None:
             self.emit = lambda x:x
+        else:
+            self.emit = emit
 
     def _log_to_elastic(self, message="successful deployment", success=True):
         telemetry_enabled = os.environ.get('ENABLE_TELEMETRY', 'False').lower() == 'true'
