@@ -1,6 +1,5 @@
 import time
 from bonfire import bonfire
-from bonfire.utils import AppOrComponentSelector
 from firelink.AdaptorClassHelpers import AdaptorClassHelpers
 import json
 import kubernetes
