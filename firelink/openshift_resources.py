@@ -84,20 +84,19 @@ class Namespace:
         # this way we can call jsonify() and it will just return the input
         self.jsonify = lambda x:x
         if jsonify is None:
-            jsonify = json.dumps
-        
+            jsonify = json.dumps      
         self.helpers = AdaptorClassHelpers()
         self.jsonify = jsonify
 
-
     def list(self):
+        """List ephemeral namespaces"""
         self.helpers.route_guard()
 
         cluster = EphemeralResources()
         namespaces = cluster.get_ephemeral_namespaces()
         reservations = cluster.get_reservations()
-        response = [] 
-        
+        response = []
+
         for namespace in namespaces:
             response_obj = {
                 "namespace": namespace.metadata.name,
@@ -116,12 +115,13 @@ class Namespace:
                     response_obj["expires_in"] = reservation["status"]["expiration"]
                     response_obj["pool_type"] = reservation["spec"]["pool"]
                     #response_obj["clowdapps"] = reservation["spec"]["clowdapps"]
-            
+
             response.append(response_obj)
-            
+
         return self.jsonify(response)
 
     def reserve(self, opts):
+        """Reserve a namespace"""
         self.helpers.route_guard()
 
         requester = opts.get("requester", bonfire._get_requester())
@@ -133,9 +133,13 @@ class Namespace:
         force = opts.get("force", False)
 
         if bonfire.check_for_existing_reservation(requester) and not force:
-            response = {"namespace": "", "completed": False, "message": "You already have a reservation."}
+            response = {
+                "namespace": "",
+                "completed": False,
+                "message": "You already have a reservation."
+            }
             return self.jsonify(response)
-        
+
         try:
             ns = bonfire.reserve_namespace(res_name, requester, duration, pool_type, timeout, local)
             response = {"namespace": ns.name, "completed": True, "message": "Namespace reserved"}
@@ -144,17 +148,18 @@ class Namespace:
         
         return self.jsonify(response)
 
-    def _try_relase_loop(self, namespace):
+    def _try_release_loop(self, namespace):
         for _ in range(self.DEFAULT_RELEASE_TRIES):
             time.sleep(self.DEFAULT_RELEASE_WAIT_SECONDS)
             released_namespace = bonfire.get_reservation(None, namespace, None)
             response = {"completed": False, "message": "Something went wrong verifying the release"}
-            if released_namespace  == None:
+            if released_namespace is None:
                 response = {"completed": True, "message": "Namespace released"}
                 break
         return response
 
     def release(self, opts):
+        """Release a namespace"""
         self.helpers.route_guard()
 
         namespace = opts.get("namespace")
@@ -164,17 +169,21 @@ class Namespace:
 
         try:
             bonfire.release_reservation(None, namespace, opts.get("local", self.DEFAULT_LOCAL))
-            response = self._try_relase_loop(namespace)
+            response = self._try_release_loop(namespace)
         except Exception as e:
             response = {"completed": False, "message": str(e)}
 
         return self.jsonify(response)
 
     def describe(self, namespace):
+        """Describe a namespace"""
         self.helpers.route_guard()
         try:
             descriptionText = bonfire.describe_namespace(namespace, "string")
-            response = {"completed": True, "message": self. _parse_description_to_json(descriptionText)}
+            response = {
+                "completed": True,
+                "message": self. _parse_description_to_json(descriptionText)
+            }
         except Exception as e:
             response = {"completed": False, "message": "ERROR: " + str(e)}
         return self.jsonify(response)
@@ -214,4 +223,3 @@ class Namespace:
             result['gateway'] = gateway
 
         return result
-
