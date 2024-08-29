@@ -70,7 +70,16 @@ class Namespace:
     DEFAULT_RELEASE_TRIES = 30
     DEFAULT_RELEASE_WAIT_SECONDS = 1
 
-    def __init__(self, jsonify=json.dumps):
+    def __init__(self, jsonify=None):
+        # This looks a little weird but it is for dependency injection 
+        # During tests we want to inject a json dumper to make testing easier
+        # but we don't need this feature in production
+        # so we default to a lambda that just returns the input
+        # this way we can call jsonify() and it will just return the input
+        self.jsonify = lambda x:x
+        if jsonify is None:
+            jsonify = json.dumps
+        
         self.helpers = AdaptorClassHelpers()
         self.jsonify = jsonify
 
