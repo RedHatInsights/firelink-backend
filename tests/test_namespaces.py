@@ -14,6 +14,12 @@ def _reserve_namespace():
         "requester": "firelink-backend-tests"}))
     return response
 
+# Depending on external factors this test can occasionally fail
+# If the CRCD cluster doesn't have enough namespaces available or
+# is too slow to release and create new ones this test will fail
+# This isn't a problem with the code but with the cluster itself
+# If this test and no other tests fail re-running this test should
+# run and pass
 class TestNamespaceConcurrency:
     """Test to ensure that namespace reservation is thread-safe"""
 
