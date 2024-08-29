@@ -1,7 +1,7 @@
 import sys
 sys.path.append('.')
-from firelink.Apps import Apps
-from firelink.OpenshiftResources import Namespace
+from firelink.apps import Apps
+from firelink.openshift_resources import Namespace
 import json
 import multiprocessing
 import pytest

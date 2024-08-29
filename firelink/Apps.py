@@ -1,7 +1,7 @@
 from bonfire import bonfire
 from bonfire.utils import AppOrComponentSelector
 from bonfire.elastic_logging import ElasticLogger
-from firelink.AdaptorClassHelpers import AdaptorClassHelpers
+from firelink.adaptor_class_helpers import AdaptorClassHelpers
 import json
 import os 
 

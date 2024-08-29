@@ -1,20 +1,23 @@
+"""This module contains classes to interact with OpenShift resources"""
 import time
-from bonfire import bonfire
-from firelink.AdaptorClassHelpers import AdaptorClassHelpers
 import json
+from bonfire import bonfire
 import kubernetes
+from firelink.adaptor_class_helpers import AdaptorClassHelpers
 
 class Node:
+    """Class to get nodes in the cluster"""
     def __init__(self, jsonify=json.dumps):
         kubernetes.config.load_kube_config()
         self.k8s_client = kubernetes.client.CoreV1Api()
         self.jsonify = jsonify
-        
+
     def get_nodes(self):
+        """Get nodes in the cluster"""
         nodes = self.k8s_client.list_node()
         processed_nodes = self._process_nodes(nodes)
         return processed_nodes
-    
+
     def _process_nodes(self, nodes):
         response = []
         for node in nodes:
@@ -34,13 +37,15 @@ class Node:
             response.append(response_obj)
         return response
 
-class Cluster:
-    def __init__(self, jsonify=json.dumps):
+class EphemeralResources:
+    """Class to get resources related to ephemeral such as namespaces and reservations"""
+    def __init__(self):
         kubernetes.config.load_kube_config()
         self.k8s_client = kubernetes.client.CoreV1Api()
-        self.crd_client = kubernetes.client.CustomObjectsApi()    
-        
+        self.crd_client = kubernetes.client.CustomObjectsApi()
+
     def get_ephemeral_namespaces(self):
+        """Get ephemeral namespaces"""
         all_namespaces = self.k8s_client.list_namespace()
         # Filter namespaces that start with "ephemeral-"
         prefix = "ephemeral-"
@@ -54,6 +59,7 @@ class Cluster:
         return namespaces
 
     def get_reservations(self):
+        """Get namespace reservations"""
         reservations = self.crd_client.list_cluster_custom_object(
             group="cloud.redhat.com",
             version="v1alpha1",
@@ -62,6 +68,7 @@ class Cluster:
         return reservations["items"]
 
 class Namespace:
+    """Class to manage namespaces"""
     DEFAULT_POOL_TYPE = "default"
     DEFAULT_DURATION = "1h"
     DEFAULT_TIMEOUT = 600
@@ -86,7 +93,7 @@ class Namespace:
     def list(self):
         self.helpers.route_guard()
 
-        cluster = Cluster()
+        cluster = EphemeralResources()
         namespaces = cluster.get_ephemeral_namespaces()
         reservations = cluster.get_reservations()
         response = [] 

@@ -8,10 +8,10 @@ from flask import jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from flask_caching import Cache
-from firelink.Apps import Apps
-from firelink.FlaskAppHelpers import FlaskAppHelpers
-from firelink.Namespace import Namespace
-from firelink.Metrics import (PrometheusNamespaceMetrics,
+from firelink.apps import Apps
+from firelink.flask_app_helpers import FlaskAppHelpers
+from firelink.openshift_resources import Namespace
+from firelink.metrics import (PrometheusNamespaceMetrics,
 PrometheusPodMetrics,
 PrometheusClusterMetrics)
 

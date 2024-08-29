@@ -1,6 +1,6 @@
 import sys
 sys.path.append('.')
-from firelink.OpenshiftResources import Namespace
+from firelink.openshift_resources import Namespace
 import json
 import concurrent.futures
 
