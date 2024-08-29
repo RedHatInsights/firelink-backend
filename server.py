@@ -38,6 +38,7 @@ def log_request_info():
     logging.info("Request: %s %s - %s", request.method, request.url, request.remote_addr)
 
 # This line has to come after before_request is defined or it freaks out
+# I don't know why
 app.before_request_funcs = [(None, helpers.login_to_openshift(), helpers.create_gql_client())]
 
 @app.route("/health")
@@ -65,7 +66,6 @@ def namespaces_list():
     """Get list of namespaces"""
     return Namespace(jsonify).list()
 
-# Get resources for all namespaces
 @app.route("/api/firelink/namespace/resource_metrics")
 def namespace_resource_metrics():
     """Get resources for all namespaces"""
@@ -74,7 +74,6 @@ def namespace_resource_metrics():
     metrics = PrometheusNamespaceMetrics().get_resources_for_namespaces(namespaces)
     return metrics
 
-# Get resources for a single namespace
 @app.route("/api/firelink/namespace/resource_metrics/<namespace>")
 def namespace_resource_metrics_single(namespace):
     """Get resources for a single namespace"""
