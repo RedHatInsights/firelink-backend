@@ -13,6 +13,7 @@ class Apps:
     DEPLOY_END_EVENT = 'end-deploy-app'
     DEPLOY_ERROR_EVENT = 'error-deploy-app'
 
+
     def __init__(self, emit=None, jsonify=json.dumps):
         self.elastic_logger = ElasticLogger()
         self.helpers = AdaptorClassHelpers()
