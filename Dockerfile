@@ -1,5 +1,5 @@
 # Use Red Hat Universal Base Image 8 with Python 3.11
-FROM registry.access.redhat.com/ubi8/python-311:1-36
+FROM registry.access.redhat.com/ubi8/python-311:1-88.1736299107
 
 USER 0
 
