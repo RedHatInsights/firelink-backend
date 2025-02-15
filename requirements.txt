@@ -72,4 +72,4 @@ Werkzeug==3.0.4
 wsproto==1.2.0
 yarl==1.9.4
 zope.event==5.0
-zope.interface==7.0.1
+zope.interface==7.2
