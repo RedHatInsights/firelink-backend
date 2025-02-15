@@ -70,6 +70,6 @@ wait-for==1.2.0
 websocket-client==1.8.0
 Werkzeug==3.0.4
 wsproto==1.2.0
-yarl==1.9.4
+yarl==1.18.3
 zope.event==5.0
 zope.interface==7.0.1
