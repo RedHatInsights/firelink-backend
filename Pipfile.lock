@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "930af1efa62f6c2663b54b0dfbae8392d7783d9852a2a901bb7c8d914fe1dcc1"
+            "sha256": "5a98c21cc0e66c4cea99d1a6a29120b243b6e099d3c99e324a76f22db47c7fae"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -286,12 +286,12 @@
         },
         "flask": {
             "hashes": [
-                "sha256:3232e0e9c850d781933cf0207523d1ece087eb8d87b23777ae38456e2fbe7c6e",
-                "sha256:822c03f4b799204250a7ee84b1eddc40665395333973dfb9deebfe425fefcb7d"
+                "sha256:5f873c5184c897c8d9d1b05df1e3d01b14910ce69607a117bd3277098a5836ac",
+                "sha256:d667207822eb83f1c4b50949b1623c8fc8d51f2341d65f72e1a1815397551136"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==3.0.2"
+            "markers": "python_version >= '3.9'",
+            "version": "==3.1.0"
         },
         "flask-caching": {
             "hashes": [
@@ -1462,19 +1462,19 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:84fb203f278ebcf5cd08f97d3fb96d3fbed4b629d500b29ad60d11e00769b183",
-                "sha256:886ff7b16cd342f1d1defc16fc98c9ce3fde69e087a4e1983d7ab634e5f41f4f"
+                "sha256:c5afc8f407c626b8313a86e10311dd3f661c6cd9c09d4bf8c15c0e11f9f2b0e6",
+                "sha256:e3982f444617239225d675215d51f6ba05f845d4eec313da4418fdbb56fb27e3"
             ],
             "markers": "python_version >= '3.9'",
-            "version": "==75.7.0"
+            "version": "==75.8.0"
         },
         "sh": {
             "hashes": [
-                "sha256:7e27301c574bec8ca5bf6f211851357526455ee97cd27a7c4c6cc5e2375399cb",
-                "sha256:bf5e44178dd96a542126c2774e9b7ab1d89bfe0e2ef84d92e6d0ed7358d63d01"
+                "sha256:287021ae84183dea49787985e33797dda7fe769e4f95f2c94dff8e245ab4cb00",
+                "sha256:c7369c4ae13729d8ea100b5e93af1a8be528a008433428e38651c9f2b5b5fe2c"
             ],
             "markers": "python_full_version >= '3.8.1' and python_version < '4.0'",
-            "version": "==2.1.0"
+            "version": "==2.2.1"
         },
         "simple-websocket": {
             "hashes": [
