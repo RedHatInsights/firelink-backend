@@ -14,7 +14,7 @@ crc-bonfire==5.10.2
 cycler==0.12.1
 dateparser==1.2.0
 Flask==3.1.0
-Flask-Caching==2.3.0
+Flask-Caching==2.3.1
 Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
 fonttools==4.53.1
