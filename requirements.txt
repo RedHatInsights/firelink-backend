@@ -1,4 +1,4 @@
-anytree==2.12.1
+anytree==2.13.0
 app-common-python==0.2.7
 bidict==0.23.1
 blinker==1.9.0
@@ -17,8 +17,8 @@ Flask==3.1.0
 Flask-Caching==2.3.1
 Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
-fonttools==4.53.1
-gevent==24.11.1
+fonttools==4.57.0
+gevent==24.2.1
 google-auth==2.34.0
 gql==3.0.0a6
 graphql-core==3.1.7
