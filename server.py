@@ -66,6 +66,11 @@ def namespaces_list():
     """Get list of namespaces"""
     return Namespace(jsonify).list()
 
+@app.route("/api/firelink/get_template", methods=["POST"])
+def get_template():
+    """Get template for an app"""
+    return Apps(emit, jsonify).get_processed_template(request.json)
+
 @app.route("/api/firelink/namespace/resource_metrics")
 def namespace_resource_metrics():
     """Get resources for all namespaces"""
