@@ -228,11 +228,7 @@ class PrometheusNamespaceMetrics:
     def __init__(self):
         prometheus_url = os.getenv("PROMETHEUS_URL")
         bearer_token = os.getenv("OC_TOKEN")
-        self.prometheus_api = PrometheusConnect(
-            url=prometheus_url,
-            headers={"Authorization": f"Bearer {bearer_token}"},
-            disable_ssl=True
-        )
+        self.prometheus_api = PrometheusConnect(url=prometheus_url,headers={"Authorization": f"Bearer {bearer_token}"},disable_ssl=True)
 
     def _run_query(self, query):
         """Run a Prometheus query and return the results."""
