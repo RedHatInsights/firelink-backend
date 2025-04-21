@@ -10,7 +10,7 @@ chardet==3.0.4
 charset-normalizer==3.4.1
 click==8.1.8
 crc-bonfire==5.11.1
-contourpy==1.3.1
+contourpy==1.3.2
 cycler==0.12.1
 dateparser==1.2.1
 Flask==3.1.0
@@ -19,10 +19,10 @@ Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
 fonttools==4.57.0
 gevent==24.2.1
-greenlet==3.1.1
+greenlet==3.2.0
 graphql-core==3.2.6
 gql==3.5.2
-google-auth==2.38.0
+google-auth==2.39.0
 gunicorn==21.2.0
 h11==0.14.0
 httmock==1.4.0
@@ -30,13 +30,13 @@ iniconfig==2.1.0
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
-junitparser==3.1.2
+junitparser==3.2.0
 kiwisolver==1.4.8
 kubernetes==30.1.0
 MarkupSafe==2.1.5
-matplotlib==3.9.2
+matplotlib==3.10.1
 multidict==6.0.5
-numpy==2.2.4
+numpy==2.2.5
 oauthlib==3.2.2
 ocviapy==1.2.3
 packaging==24.1
@@ -58,7 +58,7 @@ PyYAML==6.0.2
 regex==2024.7.24
 requests==2.32.3
 requests-oauthlib==2.0.0
-rsa==4.9
+rsa==4.9.1
 sh==2.0.7
 simple-websocket==1.0.0
 six==1.16.0
