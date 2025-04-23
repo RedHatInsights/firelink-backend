@@ -51,6 +51,43 @@ class Apps:
         apps_array.sort(key=lambda app: app['name'])
         return apps_array
 
+    def get_processed_template(self, request):
+        """Get the processed template for an app."""
+        namespace = request["namespace"]
+        clowd_env = self._get_clowdenv_for_ns(namespace)
+        if not clowd_env:
+            raise bonfire.FatalError("Could not find a ClowdEnvironment tied to ns '{ns}'.")
+        request["clowd_env"] = clowd_env
+        apps_config = bonfire._process(
+            request["app_names"],
+            request["source"],
+            request["get_dependencies"],
+            request["optional_deps_method"],
+            request["local_config_method"],
+            request["set_image_tag"],
+            request["ref_env"],
+            request["fallback_ref_env"],
+            request["target_env"],
+            request["set_template_ref"],
+            request["set_parameter"],
+            request["clowd_env"],
+            request["local_config_path"],
+            AppOrComponentSelector(bool(request.get("remove_resources") == "all"), request.get("remove_resources", []), []),
+            AppOrComponentSelector(bool(request.get("no_remove_resources") == "all"), request.get("no_remove_resources", []), []),
+            AppOrComponentSelector(bool(request.get("remove_dependencies") == "all"), [], request.get("remove_dependencies",[])),
+            AppOrComponentSelector(bool(request.get("no_remove_dependencies") == "all"), [], request.get("no_remove_dependencies", [])),
+            request["single_replicas"],
+            request["component_filter"],
+            request["local"],
+            request["frontends"],
+            request["preferred_params"],
+        )
+
+        if not apps_config["items"]:
+            raise bonfire.FatalError("No configurations found to apply!")
+        
+        return apps_config
+
     # TODO: There's no error handling here at all
     def list(self, 
         source="appsre", 
@@ -113,10 +150,10 @@ class Apps:
             request["set_parameter"],
             request["clowd_env"],
             request["local_config_path"],
-            AppOrComponentSelector(True, request["remove_resources"], []),
-            AppOrComponentSelector(False, request["no_remove_resources"], []),
-            AppOrComponentSelector(False, [], request["remove_dependencies"]),
-            AppOrComponentSelector(True, [], request["no_remove_dependencies"]),
+            AppOrComponentSelector(bool(request.get("remove_resources") == "all"), request.get("remove_resources", []), []),
+            AppOrComponentSelector(bool(request.get("no_remove_resources") == "all"), request.get("no_remove_resources", []), []),
+            AppOrComponentSelector(bool(request.get("remove_dependencies") == "all"), [], request.get("remove_dependencies",[])),
+            AppOrComponentSelector(bool(request.get("no_remove_dependencies") == "all"), [], request.get("no_remove_dependencies", [])),
             request["single_replicas"],
             request["component_filter"],
             request["local"],
