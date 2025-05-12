@@ -27,7 +27,7 @@ gql==3.5.2
 graphql-core==3.2.4
 greenlet==3.2.0
 gunicorn==21.2.0
-h11==0.14.0
+h11==0.16.0
 httmock==1.4.0
 idna==3.10
 iniconfig==2.1.0
