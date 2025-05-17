@@ -21,7 +21,7 @@ Flask-Caching==2.3.0
 Flask-Cors==4.0.2
 Flask-SocketIO==5.3.6
 fonttools==4.57.0
-gevent==24.11.1
+gevent==25.5.1
 google-auth==2.39.0
 gql==3.5.2
 graphql-core==3.2.4
