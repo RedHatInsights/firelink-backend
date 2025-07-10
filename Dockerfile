@@ -4,7 +4,7 @@ FROM registry.access.redhat.com/ubi9/python-311:9.6-1751961506
 USER 0
 
 # Install Python 3 and necessary tools
-RUN dnf -y install python3 python3-pip  dnf-plugins-core curl
+RUN dnf -y install python3 python3-pip  dnf-plugins-core curl --allowerasing
 
 # Install OpenShift CLI
 RUN curl -s -L "https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz" -o /tmp/oc.tar.gz && \
