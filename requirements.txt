@@ -25,7 +25,7 @@ gevent==24.11.1
 google-auth==2.39.0
 gql==3.5.2
 graphql-core==3.2.4
-greenlet==3.2.0
+greenlet==3.2.4
 gunicorn==21.2.0
 h11==0.16.0
 httmock==1.4.0
