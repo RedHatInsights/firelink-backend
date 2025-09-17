@@ -11,7 +11,7 @@ certifi==2025.7.14
 chardet==5.2.0
 charset-normalizer==3.4.3
 click==8.1.8
-contourpy==1.3.3
+contourpy~=1.3
 crc-bonfire==6.0.4
 cycler==0.12.1
 dateparser==1.2.1
@@ -39,7 +39,7 @@ kubernetes==32.0.1
 MarkupSafe==3.0.2
 matplotlib==3.9.4
 multidict==6.0.5
-numpy==2.3.3
+numpy==2.0.2
 oauthlib==3.2.2
 ocviapy==1.3.1
 packaging==24.2
