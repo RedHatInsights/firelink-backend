@@ -1,6 +1,6 @@
 anyio==4.9.0
 anytree==2.13.0
-app-common-python==0.2.7
+app-common-python==0.2.8
 backoff==2.2.1
 bidict==0.23.1
 blinker==1.9.0
