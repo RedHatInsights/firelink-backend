@@ -59,7 +59,7 @@ python-engineio==4.12.0
 python-socketio==5.13.0
 pytz==2025.2
 PyYAML==6.0.2
-regex==2024.11.6
+regex==2025.9.18
 requests==2.32.3
 requests-oauthlib==2.0.0
 requests-toolbelt==1.0.0
