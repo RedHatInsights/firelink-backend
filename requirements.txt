@@ -23,7 +23,7 @@ Flask-SocketIO==5.3.6
 fonttools==4.57.0
 gevent==24.11.1
 google-auth==2.39.0
-gql==3.5.2
+gql==3.5.3
 graphql-core==3.2.4
 greenlet==3.2.4
 gunicorn==21.2.0
