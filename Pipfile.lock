@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "96918660654885be2d6a8a4245909f9f7e590f23521d5f2ea52492c3227d70b3"
+            "sha256": "9c05c8361b3c46ab5265346847c376bbec0d4edbf1714192046e8c8b4c824ffd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -308,12 +308,12 @@
         },
         "flask": {
             "hashes": [
-                "sha256:bf656c15c80190ed628ad08cdfd3aaa35beb087855e2f494910aa3774cc4fd87",
-                "sha256:ca1d8112ec8a6158cc29ea4858963350011b5c846a414cdb7a954aa9e967d03c"
+                "sha256:5f873c5184c897c8d9d1b05df1e3d01b14910ce69607a117bd3277098a5836ac",
+                "sha256:d667207822eb83f1c4b50949b1623c8fc8d51f2341d65f72e1a1815397551136"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==3.1.2"
+            "version": "==3.1.0"
         },
         "flask-caching": {
             "hashes": [
@@ -468,19 +468,19 @@
                 "requests"
             ],
             "hashes": [
-                "sha256:07e1325b820c8ba9478e95de27ce9f23250486e7e79113dbb7659a442dc13e74",
-                "sha256:c830ffc38b3997b2a146317b27758305ab3d0da3bde607b49f34e32affb23ba2"
+                "sha256:393b8c049d58e0d2f5461b9d738a2b5f904186a40395500b4a84dd092d56e42b",
+                "sha256:e1fcbde2893fcafdd28114ece87ff47f1cc339a31db271fc4e1d528f5a1d4fbc"
             ],
             "index": "pypi",
-            "version": "==3.5.2"
+            "version": "==3.5.3"
         },
         "graphql-core": {
             "hashes": [
-                "sha256:1604f2042edc5f3114f49cac9d77e25863be51b23a54a61a23245cf32f6476f0",
-                "sha256:acbe2e800980d0e39b4685dd058c2f4042660b89ebca38af83020fd872ff1264"
+                "sha256:78b016718c161a6fb20a7d97bbf107f331cd1afe53e45566c59f776ed7f0b45f",
+                "sha256:c08eec22f9e40f0bd61d805907e3b3b1b9a320bc606e23dc145eebca07c8fbab"
             ],
             "markers": "python_version >= '3.6' and python_version < '4'",
-            "version": "==3.2.4"
+            "version": "==3.2.6"
         },
         "greenlet": {
             "hashes": [
