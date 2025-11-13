@@ -26,7 +26,7 @@ gevent==25.9.1; python_version >= '3.9'
 google-auth==2.43.0; python_version >= '3.7'
 gql[requests]==3.5.3
 graphql-core==3.2.6; python_version >= '3.6' and python_version < '4'
-gunicorn==21.2.0; python_version >= '3.5'
+gunicorn==23.0.0; python_version >= '3.5'
 h11==0.16.0; python_version >= '3.8'
 httmock==1.4.0
 idna==3.11; python_version >= '3.8'
