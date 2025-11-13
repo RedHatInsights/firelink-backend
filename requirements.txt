@@ -18,7 +18,7 @@ cycler==0.12.1; python_version >= '3.8'
 dateparser==1.2.2; python_version >= '3.8'
 durationpy==0.10
 flask==3.1.2; python_version >= '3.9'
-flask-caching==2.3.0; python_version >= '3.8'
+flask-caching==2.3.1; python_version >= '3.8'
 flask-cors==4.0.2
 flask-socketio==5.3.6; python_version >= '3.6'
 fonttools==4.60.1; python_version >= '3.9'
