@@ -23,7 +23,7 @@ flask-cors==4.0.2
 flask-socketio==5.3.6; python_version >= '3.6'
 fonttools==4.60.1; python_version >= '3.9'
 gevent==25.9.1; python_version >= '3.9'
-google-auth==2.43.0; python_version >= '3.7'
+google-auth==2.45.0; python_version >= '3.7'
 gql[requests]==3.5.3
 graphql-core==3.2.6; python_version >= '3.6' and python_version < '4'
 gunicorn==21.2.0; python_version >= '3.5'
