@@ -1,5 +1,5 @@
 # UBI9 Python 3.11
-FROM registry.access.redhat.com/ubi9/python-311:9.7-1762229832
+FROM registry.access.redhat.com/ubi9/python-311:9.7-1766406230
 
 USER 0
 
