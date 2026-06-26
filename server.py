@@ -1,4 +1,6 @@
 """Flask API server for Firelink"""
+import base64
+import json
 import logging
 import sys
 import os
@@ -31,6 +33,22 @@ logging.basicConfig(
 )
 
 CORS(app)
+
+
+def identity_requester():
+    """Extract the caller's username from the gateway-injected
+    x-rh-identity header. Returns None if absent or malformed; callers
+    must treat None as unauthenticated. The client-supplied request
+    body is never trusted for requester identity."""
+    raw = request.headers.get("x-rh-identity")
+    if not raw:
+        return None
+    try:
+        ident = json.loads(base64.b64decode(raw))
+        return ident.get("identity", {}).get("user", {}).get("username")
+    except (ValueError, TypeError, json.JSONDecodeError):
+        return None
+
 
 @app.before_request
 def log_request_info():
@@ -92,12 +110,12 @@ def namespace_top_pods():
 @app.route("/api/firelink/namespace/reserve", methods=["POST"])
 def namespace_reserve():
     """Reserve a namespace"""
-    return Namespace(jsonify).reserve(request.json)
+    return Namespace(jsonify).reserve(request.json, requester=identity_requester())
 
 @app.route("/api/firelink/namespace/release", methods=["POST"])
 def namespace_release():
     """Release a namespace"""
-    return Namespace(jsonify).release(request.json)
+    return Namespace(jsonify).release(request.json, requester=identity_requester())
 
 @app.route("/api/firelink/namespace/describe/<namespace>")
 def namespace_describe(namespace):
