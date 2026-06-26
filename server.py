@@ -5,8 +5,9 @@ import os
 from flask import Flask
 from flask import request
 from flask import jsonify
+from flask import abort
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, ConnectionRefusedError, emit
 from flask_caching import Cache
 from firelink.apps import Apps
 from firelink.flask_app_helpers import FlaskAppHelpers
@@ -31,6 +32,38 @@ logging.basicConfig(
 )
 
 CORS(app)
+
+# All /api/firelink/* endpoints act on the cluster with the privileged
+# OC_TOKEN service-account. They must only be reachable through the
+# Clowder/3scale gateway, which injects an x-rh-identity header for
+# authenticated SSO callers. Reject any request that arrives without it.
+# Set FIRELINK_DISABLE_AUTH=true only for local development against a
+# personal cluster.
+REQUIRE_IDENTITY = os.getenv("FIRELINK_DISABLE_AUTH", "false").lower() != "true"
+IDENTITY_HEADER = "x-rh-identity"
+
+
+@app.before_request
+def require_identity():
+    """Reject unauthenticated requests to /api/firelink/*."""
+    if not REQUIRE_IDENTITY:
+        return
+    if not request.path.startswith("/api/firelink/"):
+        return
+    if not request.headers.get(IDENTITY_HEADER):
+        logging.warning("Rejected unauthenticated request: %s %s from %s",
+                        request.method, request.path, request.remote_addr)
+        abort(401, description="x-rh-identity header required")
+
+
+@socketio.on('connect')
+def socketio_require_identity():
+    """Reject unauthenticated SocketIO connections."""
+    if REQUIRE_IDENTITY and not request.headers.get(IDENTITY_HEADER):
+        logging.warning("Rejected unauthenticated SocketIO connection from %s",
+                        request.remote_addr)
+        raise ConnectionRefusedError("x-rh-identity header required")
+
 
 @app.before_request
 def log_request_info():
