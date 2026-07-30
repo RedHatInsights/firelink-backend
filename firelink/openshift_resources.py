@@ -237,13 +237,16 @@ class Namespace:
                 if 'keycloak_admin_route' in key:
                     keycloak_admin['route'] = value
                 elif 'keycloak_admin_login' in key:
-                    username, password = value.split(' | ')
-                    keycloak_admin['login'] = {'username': username, 'password': password}
+                    # Do not expose Keycloak admin credentials over the API; callers
+                    # should retrieve them via `oc` against their own namespace.
+                    username, _ = value.split(' | ')
+                    keycloak_admin['login'] = {'username': username, 'password': '********'}
                 elif 'gateway_route' in key:
                     gateway['route'] = value
                 elif 'default_user_login' in key:
-                    username, password = value.split(' | ')
-                    gateway['login'] = {'username': username, 'password': password}
+                    # Do not expose gateway login credentials over the API.
+                    username, _ = value.split(' | ')
+                    gateway['login'] = {'username': username, 'password': '********'}
                 else:
                     result[key] = value
             elif 'deployed' in line:
