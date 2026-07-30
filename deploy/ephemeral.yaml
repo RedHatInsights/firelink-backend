@@ -57,10 +57,11 @@ objects:
       webServices:
         public:
           enabled: True
-          apiPaths: 
+          apiPaths:
             - /api/firelink/
+          # /api/firelink/* must NOT be whitelisted: the gateway must enforce
+          # SSO and inject x-rh-identity so the backend can authorize callers.
           whitelistPaths:
             - /health
-            - /api/firelink/*
 
 
