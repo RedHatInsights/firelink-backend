@@ -120,11 +120,19 @@ class Namespace:
 
         return self.jsonify(response)
 
-    def reserve(self, opts):
-        """Reserve a namespace"""
+    def reserve(self, opts, requester=None):
+        """Reserve a namespace.
+
+        ``requester`` must be derived from the caller's authenticated
+        identity by the transport layer; it is never read from the
+        client-supplied request body to prevent impersonation.
+        """
         self.helpers.route_guard()
 
-        requester = opts.get("requester", bonfire._get_requester())
+        if not requester:
+            response = {"namespace": "", "completed": False,
+                        "message": "No authenticated requester"}
+            return self.jsonify(response)
         res_name = opts.get("name")
         duration = opts.get("duration", self.DEFAULT_DURATION)
         pool_type = opts.get("pool_type", self.DEFAULT_POOL_TYPE)
@@ -158,16 +166,42 @@ class Namespace:
                 break
         return response
 
-    def release(self, opts):
-        """Release a namespace"""
+    def _reservation_owner(self, namespace):
+        reservation = bonfire.get_reservation(None, namespace, None)
+        if not reservation:
+            return None
+        try:
+            return reservation["metadata"]["labels"]["requester"]
+        except (KeyError, TypeError):
+            return reservation.get("spec", {}).get("requester")
+
+    def release(self, opts, requester=None):
+        """Release a namespace.
+
+        ``requester`` must be derived from the caller's authenticated
+        identity by the transport layer. The reservation is only
+        released when its ``requester`` label matches.
+        """
         self.helpers.route_guard()
 
         namespace = opts.get("namespace")
         if not namespace:
             response = {"completed": False, "message": "No namespace specified"}
             return self.jsonify(response)
+        if not requester:
+            response = {"completed": False, "message": "No authenticated requester"}
+            return self.jsonify(response)
 
         try:
+            owner = self._reservation_owner(namespace)
+            if owner is None:
+                response = {"completed": False,
+                            "message": "No reservation found for namespace"}
+                return self.jsonify(response)
+            if owner != requester:
+                response = {"completed": False,
+                            "message": "Not permitted: reservation is owned by another requester"}
+                return self.jsonify(response)
             bonfire.release_reservation(None, namespace, opts.get("local", self.DEFAULT_LOCAL))
             response = self._try_release_loop(namespace)
         except Exception as e:
