@@ -49,27 +49,33 @@ logging.basicConfig(
 CORS(app)
 
 def identity_requester():
-    """Extract the caller's username from the gateway-injected
-    x-rh-identity header. Returns None if absent or malformed; callers
-    must treat None as unauthenticated. The client-supplied request
-    body is never trusted for requester identity."""
-    raw = request.headers.get("x-rh-identity")
-    if not raw:
-        return None
-    try:
-        ident = json.loads(base64.b64decode(raw))
-        return ident.get("identity", {}).get("user", {}).get("username")
-    except (ValueError, TypeError, json.JSONDecodeError):
-        return None
+    """Extract the caller's username from an upstream authenticator's
+    vouching header: the 3scale gateway's x-rh-identity (base64 JSON),
+    or the oauth-proxy's X-Forwarded-User when that is absent. Returns
+    None if neither is present or x-rh-identity is malformed; callers
+    must treat None as unauthenticated. X-Forwarded-User is trusted
+    because oauth-proxy overwrites it and no Route exposes the backend
+    except through the proxy. The client-supplied request body is never
+    trusted for requester identity."""
+    raw = request.headers.get(IDENTITY_HEADER)
+    if raw:
+        try:
+            ident = json.loads(base64.b64decode(raw))
+            return ident.get("identity", {}).get("user", {}).get("username")
+        except (ValueError, TypeError, json.JSONDecodeError):
+            return None
+    return request.headers.get(FORWARDED_USER_HEADER) or None
 
 # All /api/firelink/* endpoints act on the cluster with the privileged
-# OC_TOKEN service-account. They must only be reachable through the
-# Clowder/3scale gateway, which injects an x-rh-identity header for
-# authenticated SSO callers. Reject any request that arrives without it.
-# Set FIRELINK_DISABLE_AUTH=true only for local development against a
-# personal cluster.
+# OC_TOKEN service-account. Callers must arrive with an upstream
+# authenticator's vouching header: x-rh-identity from the Clowder/3scale
+# gateway, or X-Forwarded-User from the oauth-proxy that fronts the
+# app-interface deployments. Reject any request that arrives without
+# one. Set FIRELINK_DISABLE_AUTH=true only for local development
+# against a personal cluster.
 REQUIRE_IDENTITY = os.getenv("FIRELINK_DISABLE_AUTH", "false").lower() != "true"
 IDENTITY_HEADER = "x-rh-identity"
+FORWARDED_USER_HEADER = "X-Forwarded-User"
 
 
 @app.before_request
@@ -79,24 +85,26 @@ def require_identity():
         return
     if not request.path.startswith("/api/firelink/"):
         return
-    if not request.headers.get(IDENTITY_HEADER):
+    vouched = request.headers.get(IDENTITY_HEADER) or request.headers.get(FORWARDED_USER_HEADER)
+    if not vouched:
         logging.warning(
             "Rejected unauthenticated request: %s %s from %s",
             request.method,
             request.path,
             request.remote_addr,
         )
-        abort(401, description="x-rh-identity header required")
+        abort(401, description="x-rh-identity or X-Forwarded-User header required")
 
 
 @socketio.on("connect")
 def socketio_require_identity():
     """Reject unauthenticated SocketIO connections."""
-    if REQUIRE_IDENTITY and not request.headers.get(IDENTITY_HEADER):
+    vouched = request.headers.get(IDENTITY_HEADER) or request.headers.get(FORWARDED_USER_HEADER)
+    if REQUIRE_IDENTITY and not vouched:
         logging.warning(
             "Rejected unauthenticated SocketIO connection from %s", request.remote_addr
         )
-        raise ConnectionRefusedError("x-rh-identity header required")
+        raise ConnectionRefusedError("x-rh-identity or X-Forwarded-User header required")
 
 
 @app.before_request
