@@ -49,18 +49,22 @@ logging.basicConfig(
 CORS(app)
 
 def identity_requester():
-    """Extract the caller's username from the gateway-injected
-    x-rh-identity header. Returns None if absent or malformed; callers
-    must treat None as unauthenticated. The client-supplied request
+    """Extract the caller's username from an upstream authenticator's
+    vouching header: the 3scale gateway's x-rh-identity (base64 JSON),
+    or the oauth-proxy's X-Forwarded-User when that is absent. Returns
+    None if neither is present or x-rh-identity is malformed; callers
+    must treat None as unauthenticated. X-Forwarded-User is trusted only
+    because oauth-proxy overwrites it and backend ingress is restricted
+    to the proxy (deploy/template.yaml). The client-supplied request
     body is never trusted for requester identity."""
-    raw = request.headers.get("x-rh-identity")
-    if not raw:
-        return None
-    try:
-        ident = json.loads(base64.b64decode(raw))
-        return ident.get("identity", {}).get("user", {}).get("username")
-    except (ValueError, TypeError, json.JSONDecodeError):
-        return None
+    raw = request.headers.get(IDENTITY_HEADER)
+    if raw:
+        try:
+            ident = json.loads(base64.b64decode(raw))
+            return ident.get("identity", {}).get("user", {}).get("username")
+        except (ValueError, TypeError, json.JSONDecodeError):
+            return None
+    return request.headers.get(FORWARDED_USER_HEADER) or None
 
 # All /api/firelink/* endpoints act on the cluster with the privileged
 # OC_TOKEN service-account. They must only be reachable through the
@@ -70,6 +74,7 @@ def identity_requester():
 # personal cluster.
 REQUIRE_IDENTITY = os.getenv("FIRELINK_DISABLE_AUTH", "false").lower() != "true"
 IDENTITY_HEADER = "x-rh-identity"
+FORWARDED_USER_HEADER = "X-Forwarded-User"
 
 
 @app.before_request
