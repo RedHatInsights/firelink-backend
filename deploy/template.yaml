@@ -66,15 +66,3 @@ objects:
           port: 8000
           targetPort: 8000
       sessionAffinity: ClientIP
-
-  - apiVersion: route.openshift.io/v1
-    kind: Route
-    metadata:
-      name: firelink-route
-    spec:
-      to:
-        kind: Service
-        name: firelink-service
-      port:
-        targetPort: 8000
-      path: /api/firelink/

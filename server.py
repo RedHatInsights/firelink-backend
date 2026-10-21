@@ -53,10 +53,10 @@ def identity_requester():
     vouching header: the 3scale gateway's x-rh-identity (base64 JSON),
     or the oauth-proxy's X-Forwarded-User when that is absent. Returns
     None if neither is present or x-rh-identity is malformed; callers
-    must treat None as unauthenticated. X-Forwarded-User is trusted only
-    because oauth-proxy overwrites it and backend ingress is restricted
-    to the proxy (deploy/template.yaml). The client-supplied request
-    body is never trusted for requester identity."""
+    must treat None as unauthenticated. X-Forwarded-User is trusted
+    because oauth-proxy overwrites it and no Route exposes the backend
+    except through the proxy. The client-supplied request body is never
+    trusted for requester identity."""
     raw = request.headers.get(IDENTITY_HEADER)
     if raw:
         try:
