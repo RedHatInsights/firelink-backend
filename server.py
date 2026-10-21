@@ -99,11 +99,12 @@ def require_identity():
 @socketio.on("connect")
 def socketio_require_identity():
     """Reject unauthenticated SocketIO connections."""
-    if REQUIRE_IDENTITY and not request.headers.get(IDENTITY_HEADER):
+    vouched = request.headers.get(IDENTITY_HEADER) or request.headers.get(FORWARDED_USER_HEADER)
+    if REQUIRE_IDENTITY and not vouched:
         logging.warning(
             "Rejected unauthenticated SocketIO connection from %s", request.remote_addr
         )
-        raise ConnectionRefusedError("x-rh-identity header required")
+        raise ConnectionRefusedError("x-rh-identity or X-Forwarded-User header required")
 
 
 @app.before_request
