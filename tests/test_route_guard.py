@@ -45,8 +45,8 @@ def test_unexpected_error_propagates():
 def test_check_result_is_cached():
     client = _client()
     helpers = AdaptorClassHelpers(crd_client=client)
-    assert helpers._has_ns_operator() is True
-    assert helpers._has_ns_operator() is True
+    assert helpers._check_ns_operator() is True
+    assert helpers._check_ns_operator() is True
     assert client.list_cluster_custom_object.call_count == 1
 
 

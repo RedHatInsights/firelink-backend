@@ -13,7 +13,7 @@ class AdaptorClassHelpers:
 
     def __init__(self, crd_client=None):
         self._crd_client = crd_client
-        self._has_operator = None
+        self._has_ns_operator = None
         self._lock = threading.Lock()
 
     def _get_crd_client(self):
@@ -22,7 +22,7 @@ class AdaptorClassHelpers:
             self._crd_client = k8s_client.CustomObjectsApi()
         return self._crd_client
 
-    def _check_ns_operator(self):
+    def _query_ns_operator(self):
         group, version, plural = self.NS_OPERATOR_CRD
         try:
             self._get_crd_client().list_cluster_custom_object(
@@ -36,14 +36,14 @@ class AdaptorClassHelpers:
                 return True
             raise
 
-    def _has_ns_operator(self):
-        if self._has_operator is None:
+    def _check_ns_operator(self):
+        if self._has_ns_operator is None:
             with self._lock:
-                if self._has_operator is None:
-                    self._has_operator = self._check_ns_operator()
-        return self._has_operator
+                if self._has_ns_operator is None:
+                    self._has_ns_operator = self._query_ns_operator()
+        return self._has_ns_operator
 
     def route_guard(self):
         """We run this before routes to ensure that the reservation system is available"""
-        if not self._has_ns_operator():
+        if not self._check_ns_operator():
             raise bonfire.FatalError(bonfire.NO_RESERVATION_SYS)
