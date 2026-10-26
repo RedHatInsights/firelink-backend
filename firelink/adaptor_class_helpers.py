@@ -2,7 +2,7 @@
 import threading
 
 from bonfire import bonfire
-from kubernetes import client as k8s_client
+from kubernetes import client as k8s_client, config as k8s_config
 from kubernetes.client import ApiException
 
 
@@ -18,6 +18,7 @@ class AdaptorClassHelpers:
 
     def _get_crd_client(self):
         if self._crd_client is None:
+            k8s_config.load_kube_config()
             self._crd_client = k8s_client.CustomObjectsApi()
         return self._crd_client
 
