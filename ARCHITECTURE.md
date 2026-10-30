@@ -209,11 +209,12 @@ deployments. The frontend applies its own 60-second inactivity timeout — if no
 
 ### Container Image
 
-The `Dockerfile` builds a single-stage image from `registry.access.redhat.com/ubi9/python-311`.
-It installs the `oc` CLI for OpenShift API operations, copies `requirements.txt` (generated from
-`Pipfile.lock` via `make requirements`), installs Python dependencies, and runs Gunicorn with a
-gevent worker on port 8000. The image is rootless (UID 1001) and compatible with OpenShift's
-arbitrary UID enforcement.
+The `Dockerfile` builds a multi-stage image using Red Hat Hardened Images (distroless Python 3.12).
+The build stage (`hi/python:3.12-builder`) installs the `oc` CLI and creates a Python virtualenv
+with dependencies from `requirements.txt` (generated from `Pipfile.lock` via `make requirements`).
+The runtime stage (`hi/python:3.12`) is distroless (no shell, no package manager) and copies the
+virtualenv, oc binary, and application code. It runs Gunicorn with a gevent worker on port 8000 as
+a non-root user (UID 65532) and is compatible with OpenShift's arbitrary UID enforcement.
 
 ### Dependency Management
 
