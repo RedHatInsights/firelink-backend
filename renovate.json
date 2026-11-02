@@ -4,5 +4,13 @@
     ":disableMajorUpdates",
     "github>konflux-ci/mintmaker-presets:cve-automerge-all",
     "group:all"
+  ],
+  "packageRules": [
+    {
+      "description": "Keep Python version pinned to minor",
+      "matchPackageNames": [ "registry.access.redhat.com/hi/python" ],
+      "matchUpdateTypes": [ "major", "minor" ],
+      "enabled": false
+    }
   ]
 }
