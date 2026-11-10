@@ -31,7 +31,7 @@ WORKDIR /opt/app-root/src
 # App env
 ENV APP_ROOT=/opt/app-root \
     APP_SRC=/opt/app-root/src \
-    HOME=/opt/app-root \
+    HOME=/tmp \
     FLASK_APP="server.py" \
     FLASK_RUN_HOST="0.0.0.0" \
     FLASK_RUN_PORT="8000" \
@@ -53,4 +53,4 @@ COPY --chown=65532:0 . .
 EXPOSE 8000
 
 # Distroless supports only CMD/ENTRYPOINT (no RUN, no shell)
-CMD ["gunicorn", "-k", "gevent", "-w", "1", "-b", ":8000", "server:app"]
+CMD ["gunicorn", "-k", "gevent", "-w", "1", "--timeout", "600", "-b", ":8000", "server:app"]
