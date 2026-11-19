@@ -15,6 +15,9 @@ parameters:
 - name: PROMETHEUS_URL
   description: Prometheus URL
   required: true
+- name: OC_SERVER
+  description: OpenShift API server URL
+  value: "https://api.crc-eph.r9lp.p1.openshiftapps.com:6443"
 
 objects:
 - apiVersion: cloud.redhat.com/v1alpha1
@@ -51,15 +54,12 @@ objects:
           - name: PROMETHEUS_URL
             value: ${PROMETHEUS_URL}
           - name: OC_SERVER
-            valueFrom:
-              secretKeyRef:
-                name: crc-eph-bot-account
-                key: oc-login-server
+            value: ${OC_SERVER}
           - name: OC_TOKEN
             valueFrom:
               secretKeyRef:
                 name: crc-eph-bot-account
-                key: oc-login-token
+                key: token
           - name: APP_INTERFACE_BASE_URL
             valueFrom:
               secretKeyRef:
