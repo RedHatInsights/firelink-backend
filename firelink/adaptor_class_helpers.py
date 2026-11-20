@@ -10,6 +10,7 @@ class AdaptorClassHelpers:
     """Helper functions for the adaptor classes"""
 
     NS_OPERATOR_CRD = ("cloud.redhat.com", "v1alpha1", "namespacereservations")
+    NS_OPERATOR_QUERY_TIMEOUT_SECONDS = 15
 
     def __init__(self, crd_client=None):
         self._crd_client = crd_client
@@ -26,7 +27,8 @@ class AdaptorClassHelpers:
         group, version, plural = self.NS_OPERATOR_CRD
         try:
             self._get_crd_client().list_cluster_custom_object(
-                group=group, version=version, plural=plural, limit=1
+                group=group, version=version, plural=plural, limit=1,
+                _request_timeout=self.NS_OPERATOR_QUERY_TIMEOUT_SECONDS
             )
             return True
         except ApiException as e:
