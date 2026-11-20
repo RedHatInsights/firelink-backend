@@ -5,6 +5,9 @@ from bonfire import qontract
 
 class FlaskAppHelpers:
     """Helper functions for the Flask app."""
+
+    OC_COMMAND_TIMEOUT_SECONDS = 30
+
     def health(self):
         """We check health by ensuring we can talk to the OpenShift API."""
         try:
@@ -13,10 +16,11 @@ class FlaskAppHelpers:
                 check=True,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                timeout=self.OC_COMMAND_TIMEOUT_SECONDS
             )
             return True
-        except subprocess.CalledProcessError as _e:
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return False
 
     def login_to_openshift(self):
@@ -30,11 +34,15 @@ class FlaskAppHelpers:
                     check=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
-                    text=True
+                    text=True,
+                    timeout=self.OC_COMMAND_TIMEOUT_SECONDS
                 )
                 print(result.stdout)
             except subprocess.CalledProcessError as e:
                 print("Failed to login:", e.stderr)
+            except subprocess.TimeoutExpired:
+                print(f"Failed to login: 'oc login' timed out after "
+                      f"{self.OC_COMMAND_TIMEOUT_SECONDS}s")
         else:
             print("OC_TOKEN and OC_SERVER env vars not found. Assuming local kubecontext.")
 
