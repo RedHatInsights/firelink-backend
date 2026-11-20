@@ -53,4 +53,4 @@ COPY --chown=65532:0 . .
 EXPOSE 8000
 
 # Distroless supports only CMD/ENTRYPOINT (no RUN, no shell)
-CMD ["gunicorn", "-k", "gevent", "-w", "1", "--timeout", "600", "-b", ":8000", "server:app"]
+CMD ["gunicorn", "-k", "gevent", "-w", "1", "--timeout", "600", "-b", ":8000", "wsgi:app"]
