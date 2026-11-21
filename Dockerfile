@@ -2,7 +2,7 @@
 # Multi-stage build: builder for dependencies and tools, distroless runtime
 
 # Build stage — runs as the image default user (65532); non-root throughout
-FROM registry.access.redhat.com/hi/python:3.12-builder@sha256:809f01ba8db118489cff195fe38b512d9ad6996d49002d9622ba3aae28012952 AS build
+FROM registry.access.redhat.com/hi/python:3.12-builder@sha256:83a8d45c8cf97d0581ac4248a2ac2727eb3549165429cc9e072f437a67f33bda AS build
 
 # Install tar and oc CLI as root (needed for system paths), then switch to non-root
 USER 0
@@ -24,7 +24,7 @@ RUN python3.12 -m venv .venv && \
     .venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Runtime stage — distroless, non-root, no shell
-FROM registry.access.redhat.com/hi/python:3.12@sha256:7ec601c79877a81a86673a75440cf7f61ecc2753067513af5df6e11891867a6f
+FROM registry.access.redhat.com/hi/python:3.12@sha256:c700b40206ae464d003b812671113806e4ffd01aba207f8ed3b72a90da5b2ff9
 
 WORKDIR /opt/app-root/src
 
